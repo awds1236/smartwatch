@@ -1,5 +1,6 @@
 package com.example.smartwatch
 
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -30,7 +32,12 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val WORK_TAG = "sleep_monitor"
-        private val HEALTH_PERMISSIONS = setOf(
+
+        /**
+         * Health Connect 공식 API 방식으로 권한 문자열 Set 구성.
+         * HealthPermission.getReadPermission()은 "androidx.health.permission.SleepSession" 형태의 String 반환.
+         */
+        val HEALTH_PERMISSIONS = setOf(
             HealthPermission.getReadPermission(SleepSessionRecord::class)
         )
     }
@@ -44,18 +51,26 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggle: Button
     private lateinit var btnPermission: Button
 
+    /**
+     * 공식 Health Connect 권한 요청 런처.
+     * PermissionController.createRequestPermissionResultContract()은
+     * 내부적으로 com.android.healthconnect.controller(Android 14+) 또는
+     * com.google.android.apps.healthdata(Android 13 이하)를 타겟으로 하는
+     * ActivityResultContract를 반환한다.
+     *
+     * HC가 앱을 인식하려면 AndroidManifest에 아래 두 가지가 필수:
+     *  1) <activity> with action=ACTION_SHOW_PERMISSIONS_RATIONALE
+     *  2) <activity-alias> with action=VIEW_PERMISSION_USAGE + category=HEALTH_PERMISSIONS
+     */
     private val permissionLauncher = registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()
     ) { granted ->
-        Log.d(TAG, "Permission result: $granted")
+        Log.d(TAG, "HC permission result granted=$granted")
         val hasAll = granted.containsAll(HEALTH_PERMISSIONS)
         applyPermissionState(hasAll)
         if (!hasAll) {
-            Toast.makeText(
-                this,
-                "권한이 거부되었습니다.\nHealth Connect 앱 → 앱 권한에서 직접 허용해주세요.",
-                Toast.LENGTH_LONG
-            ).show()
+            // 다이얼로그가 열렸지만 거부된 경우, 또는 HC가 앱을 인식 못해 즉시 빈 결과를 반환한 경우
+            showPermissionManualGuide()
         }
     }
 
@@ -90,6 +105,7 @@ class MainActivity : AppCompatActivity() {
             @Suppress("UnspecifiedRegisterReceiverFlag")
             registerReceiver(statusReceiver, filter)
         }
+        // 앱으로 복귀할 때마다 권한 재확인 (HC 설정에서 수동 허용 후 복귀 시 자동 반영)
         checkPermissionAndUpdateUI()
     }
 
@@ -128,69 +144,131 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "getGrantedPermissions failed", it)
                 emptySet()
             }
-            Log.d(TAG, "Granted permissions: $granted")
+            Log.d(TAG, "Currently granted: $granted")
             applyPermissionState(granted.containsAll(HEALTH_PERMISSIONS))
         }
     }
 
     private fun applyPermissionState(granted: Boolean) {
-        btnToggle.isEnabled   = granted
+        btnToggle.isEnabled     = granted
         btnPermission.isEnabled = !granted
         btnPermission.text = if (granted) "Health Connect 권한 허용됨 ✓"
                              else         "Health Connect 권한 허용"
         updateUI()
     }
 
+    /**
+     * 공식 Health Connect 권한 요청 진입점.
+     *
+     * PermissionController.createRequestPermissionResultContract()를 통해 생성된
+     * permissionLauncher를 사용하는 것이 공식 권장 방식이다.
+     * HC가 앱을 권한 목록에 표시하려면 AndroidManifest의 activity-alias가
+     * 올바르게 선언되어야 한다.
+     */
     private fun requestHealthPermissions() {
         val status = HealthConnectClient.getSdkStatus(this)
+        Log.d(TAG, "requestHealthPermissions: HC status=$status")
+
         if (status != HealthConnectClient.SDK_AVAILABLE) {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
-                "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")))
+            // HC가 없으면 Play Store로 이동
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=com.google.android.apps.healthdata")))
+            } catch (e: ActivityNotFoundException) {
+                startActivity(Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")))
+            }
             return
         }
 
-        // PermissionController 런처를 직접 실행 — resolveActivity 체크 없이 항상 시도
-        // (Android 14 내장 HC는 resolveActivity가 null을 반환해도 실제론 처리 가능)
-        try {
-            Log.d(TAG, "Launching HC permission dialog")
-            permissionLauncher.launch(HEALTH_PERMISSIONS)
-        } catch (e: Exception) {
-            // ActivityNotFoundException 등 — HC 설정 화면으로 직접 이동
-            Log.w(TAG, "permissionLauncher failed: ${e.message}, falling back to HC settings")
-            openHealthConnectSettings()
-        }
+        // 공식 HC 권한 요청: PermissionController 런처 실행
+        Log.d(TAG, "Launching HC permission dialog via PermissionController")
+        permissionLauncher.launch(HEALTH_PERMISSIONS)
     }
 
-    /** Health Connect 앱(또는 시스템 설정)을 직접 열어 사용자가 수동 허용하도록 안내 */
-    private fun openHealthConnectSettings() {
-        val candidates = listOf(
-            // Android 14+ 내장
-            "com.android.healthconnect.controller",
-            // Google Health Connect 독립 앱
-            "com.google.android.apps.healthdata",
-            // Samsung
-            "com.samsung.android.healthconnect"
+    /**
+     * permissionLauncher가 권한을 부여받지 못한 경우 (거부 또는 HC가 앱 미인식) 표시하는 안내 다이얼로그.
+     *
+     * 1순위: android.health.connect.action.MANAGE_HEALTH_PERMISSIONS 인텐트로
+     *        이 앱 전용 HC 권한 페이지 직접 이동 (Android 14+)
+     * 2순위: HC 앱 홈 화면으로 이동
+     */
+    private fun showPermissionManualGuide() {
+        AlertDialog.Builder(this)
+            .setTitle("수면 권한 허용 필요")
+            .setMessage(
+                "Health Connect에서 이 앱의 수면 권한을 직접 허용해주세요.\n\n" +
+                "경로: Health Connect → 앱 권한 → 수면 알람 → '수면 세션 읽기' 허용\n\n" +
+                "허용 후 앱으로 돌아오면 자동으로 반영됩니다."
+            )
+            .setPositiveButton("Health Connect 열기") { _, _ ->
+                openHCPermissionsForThisApp()
+            }
+            .setNeutralButton("다시 시도") { _, _ ->
+                permissionLauncher.launch(HEALTH_PERMISSIONS)
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    /**
+     * 이 앱의 Health Connect 권한 페이지를 직접 여는 함수.
+     *
+     * Android 14+: MANAGE_HEALTH_PERMISSIONS + EXTRA_PACKAGE_NAME으로
+     *              이 앱 전용 HC 권한 화면 직접 오픈
+     * Fallback:    HC 앱 홈 화면 → 시스템 설정 순으로 시도
+     */
+    private fun openHCPermissionsForThisApp() {
+        // 1순위: Android 14+ 전용 앱 권한 페이지
+        try {
+            val intent = Intent("android.health.connect.action.MANAGE_HEALTH_PERMISSIONS").apply {
+                putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+            }
+            startActivity(intent)
+            Log.d(TAG, "Opened MANAGE_HEALTH_PERMISSIONS for $packageName")
+            return
+        } catch (e: Exception) {
+            Log.w(TAG, "MANAGE_HEALTH_PERMISSIONS failed: ${e.message}")
+        }
+
+        // 2순위: HC 시스템 홈
+        try {
+            startActivity(Intent("android.health.connect.action.HEALTH_HOME_SETTINGS"))
+            Log.d(TAG, "Opened HEALTH_HOME_SETTINGS")
+            Toast.makeText(
+                this,
+                "앱 권한 → 수면 알람 → '수면 세션 읽기' 허용 후 돌아오세요.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        } catch (e: Exception) {
+            Log.w(TAG, "HEALTH_HOME_SETTINGS failed: ${e.message}")
+        }
+
+        // 3순위: HC 패키지 직접 실행
+        val hcPackages = listOf(
+            "com.android.healthconnect.controller",   // Android 14+ 내장
+            "com.google.android.apps.healthdata",     // Android 13 이하 독립 앱
+            "com.samsung.android.healthconnect"       // Samsung
         )
-        for (pkg in candidates) {
-            val launch = packageManager.getLaunchIntentForPackage(pkg)
-            if (launch != null) {
-                Log.d(TAG, "Opening HC via package: $pkg")
+        for (pkg in hcPackages) {
+            val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
+            if (launchIntent != null) {
+                Log.d(TAG, "Opening HC via package launch: $pkg")
                 Toast.makeText(
                     this,
-                    "Health Connect → 앱 권한 → 수면 알람 → 수면 허용\n허용 후 돌아오면 자동 반영됩니다.",
+                    "앱 권한 → 수면 알람 → '수면 세션 읽기' 허용 후 돌아오세요.",
                     Toast.LENGTH_LONG
                 ).show()
-                startActivity(launch)
+                startActivity(launchIntent)
                 return
             }
         }
-        // 마지막 수단: 시스템 앱 설정
-        Toast.makeText(this, "설정 → 개인정보 보호 → Health Connect 에서 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
-        try {
-            startActivity(Intent("android.health.connect.action.HEALTH_HOME_SETTINGS"))
-        } catch (e: Exception) {
-            startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
-        }
+
+        // 최후 수단: 시스템 설정
+        Log.w(TAG, "All HC open attempts failed, opening system settings")
+        Toast.makeText(this, "설정 → 개인정보 보호 → Health Connect에서 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
+        startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
     }
 
     // ── 모니터링 ───────────────────────────────────────────────────
