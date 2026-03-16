@@ -148,8 +148,52 @@ class MainActivity : AppCompatActivity() {
                 "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")))
             return
         }
-        Log.d(TAG, "Launching HC permission dialog…")
-        permissionLauncher.launch(HEALTH_PERMISSIONS)
+
+        // PermissionController intent가 실제로 resolve 되는지 먼저 확인
+        val contract = PermissionController.createRequestPermissionResultContract()
+        val intent   = contract.createIntent(this, HEALTH_PERMISSIONS)
+        val resolved = intent.resolveActivity(packageManager)
+        Log.d(TAG, "HC permission intent=$intent  resolved=$resolved")
+
+        if (resolved != null) {
+            permissionLauncher.launch(HEALTH_PERMISSIONS)
+        } else {
+            // intent를 resolve할 수 없음 → 직접 HC 설정 화면 열기
+            Log.w(TAG, "PermissionController intent unresolvable, opening HC settings")
+            openHealthConnectSettings()
+        }
+    }
+
+    /** Health Connect 앱(또는 시스템 설정)을 직접 열어 사용자가 수동 허용하도록 안내 */
+    private fun openHealthConnectSettings() {
+        val candidates = listOf(
+            // Android 14+ 내장
+            "com.android.healthconnect.controller",
+            // Google Health Connect 독립 앱
+            "com.google.android.apps.healthdata",
+            // Samsung
+            "com.samsung.android.healthconnect"
+        )
+        for (pkg in candidates) {
+            val launch = packageManager.getLaunchIntentForPackage(pkg)
+            if (launch != null) {
+                Log.d(TAG, "Opening HC via package: $pkg")
+                Toast.makeText(
+                    this,
+                    "Health Connect → 앱 권한 → 수면 알람 → 수면 허용\n허용 후 돌아오면 자동 반영됩니다.",
+                    Toast.LENGTH_LONG
+                ).show()
+                startActivity(launch)
+                return
+            }
+        }
+        // 마지막 수단: 시스템 앱 설정
+        Toast.makeText(this, "설정 → 개인정보 보호 → Health Connect 에서 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
+        try {
+            startActivity(Intent("android.health.connect.action.HEALTH_HOME_SETTINGS"))
+        } catch (e: Exception) {
+            startActivity(Intent(android.provider.Settings.ACTION_SETTINGS))
+        }
     }
 
     // ── 모니터링 ───────────────────────────────────────────────────
