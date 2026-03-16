@@ -13,7 +13,7 @@ import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -30,10 +30,16 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
 
     companion object {
+        private const val TAG = "MainActivity"
         private const val WORK_TAG = "sleep_monitor"
+
+        // Health Connect SDK 권한 문자열
         private val HEALTH_PERMISSIONS = setOf(
             HealthPermission.getReadPermission(SleepSessionRecord::class)
         )
+
+        // Android 14+ 런타임 권한 문자열
+        private const val SLEEP_PERMISSION = "android.permission.health.READ_SLEEP_SESSION"
     }
 
     private lateinit var prefs: SleepPreferences
@@ -45,41 +51,41 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnToggle: Button
     private lateinit var btnPermission: Button
 
-    private val permissionLauncher = registerForActivityResult(
+    // Android 14+ 표준 런타임 권한 요청
+    private val runtimePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results[SLEEP_PERMISSION] == true
+        Log.d(TAG, "Runtime permission result: $results")
+        onPermissionResult(granted)
+    }
+
+    // Android 13 이하 Health Connect SDK 방식
+    private val sdkPermissionLauncher = registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()
     ) { granted ->
-        val hasAll = granted.containsAll(HEALTH_PERMISSIONS)
-        btnToggle.isEnabled = hasAll
-        if (hasAll) {
-            btnPermission.text = "Health Connect 권한 허용됨 ✓"
-            btnPermission.isEnabled = false
-            Toast.makeText(this, "Health Connect 권한이 허용되었습니다.", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "수면 데이터 권한이 필요합니다.", Toast.LENGTH_LONG).show()
-        }
+        Log.d(TAG, "SDK permission result: $granted")
+        onPermissionResult(granted.containsAll(HEALTH_PERMISSIONS))
     }
 
     private val statusReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            updateUI()
-        }
+        override fun onReceive(context: Context, intent: Intent) { updateUI() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        prefs = SleepPreferences(this)
-        pickerHours    = findViewById(R.id.picker_hours)
-        pickerMinutes  = findViewById(R.id.picker_minutes)
-        tvStatus       = findViewById(R.id.tv_status)
+        prefs        = SleepPreferences(this)
+        pickerHours  = findViewById(R.id.picker_hours)
+        pickerMinutes = findViewById(R.id.picker_minutes)
+        tvStatus     = findViewById(R.id.tv_status)
         tvSleepProgress = findViewById(R.id.tv_sleep_progress)
-        tvGoalSummary  = findViewById(R.id.tv_goal_summary)
-        btnToggle      = findViewById(R.id.btn_toggle)
-        btnPermission  = findViewById(R.id.btn_permission)
+        tvGoalSummary = findViewById(R.id.tv_goal_summary)
+        btnToggle    = findViewById(R.id.btn_toggle)
+        btnPermission = findViewById(R.id.btn_permission)
 
         setupPickers()
-
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
 
@@ -94,7 +100,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             registerReceiver(statusReceiver, filter)
         }
-        updateUI()
+        // 설정에서 돌아왔을 때 권한 상태 재확인
+        checkPermissionAndUpdateUI()
     }
 
     override fun onPause() {
@@ -103,23 +110,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupPickers() {
-        pickerHours.minValue = 0
-        pickerHours.maxValue = 12
-        pickerMinutes.minValue = 0
-        pickerMinutes.maxValue = 59
+        pickerHours.minValue = 0; pickerHours.maxValue = 12
+        pickerMinutes.minValue = 0; pickerMinutes.maxValue = 59
 
         val saved = prefs.goalMinutes
-        pickerHours.value   = saved / 60
+        pickerHours.value = saved / 60
         pickerMinutes.value = saved % 60
 
-        val listener = NumberPicker.OnValueChangeListener { _, _, _ ->
+        val onChange = NumberPicker.OnValueChangeListener { _, _, _ ->
             val total = pickerHours.value * 60 + pickerMinutes.value
             prefs.setGoalMinutes(total)
             updateGoalSummary(total)
         }
-        pickerHours.setOnValueChangedListener(listener)
-        pickerMinutes.setOnValueChangedListener(listener)
-
+        pickerHours.setOnValueChangedListener(onChange)
+        pickerMinutes.setOnValueChangedListener(onChange)
         updateGoalSummary(saved)
     }
 
@@ -128,85 +132,75 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionAndUpdateUI() {
-        val status = HealthConnectClient.getSdkStatus(this)
-        Log.d("MainActivity", "Health Connect SDK status: $status")
+        val sdkStatus = HealthConnectClient.getSdkStatus(this)
+        Log.d(TAG, "HC SDK status: $sdkStatus")
 
-        when (status) {
-            HealthConnectClient.SDK_UNAVAILABLE -> {
-                btnPermission.text = "Health Connect 설치 필요 (탭하여 설치)"
-                tvStatus.text = "Health Connect 앱이 설치되어 있지 않습니다."
-                return
-            }
-            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                btnPermission.text = "Health Connect 업데이트 필요 (탭하여 업데이트)"
-                tvStatus.text = "Health Connect 앱을 업데이트해주세요."
-                return
-            }
+        if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE) {
+            btnPermission.text = "Health Connect 설치 필요"
+            tvStatus.text = "Health Connect 앱이 필요합니다."
+            return
         }
-
-        // SDK_AVAILABLE
-        lifecycleScope.launch {
-            val granted = HealthConnectClient.getOrCreate(this@MainActivity)
-                .permissionController
-                .getGrantedPermissions()
-            val hasAll = granted.containsAll(HEALTH_PERMISSIONS)
-            btnToggle.isEnabled = hasAll
-            if (hasAll) {
-                btnPermission.text = "Health Connect 권한 허용됨 ✓"
-                btnPermission.isEnabled = false
-            }
-            updateUI()
-        }
-    }
-
-    private fun requestHealthPermissions() {
-        val status = HealthConnectClient.getSdkStatus(this)
-
-        // 미설치 또는 업데이트 필요 → Play 스토어로 이동
-        if (status != HealthConnectClient.SDK_AVAILABLE) {
-            try {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
-                    "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"
-                )))
-            } catch (e: Exception) {
-                Toast.makeText(this, "Health Connect 앱을 Play 스토어에서 설치해주세요.", Toast.LENGTH_LONG).show()
-            }
+        if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+            btnPermission.text = "Health Connect 업데이트 필요"
+            tvStatus.text = "Health Connect를 업데이트해주세요."
             return
         }
 
-        // 권한 요청 시도
-        try {
-            permissionLauncher.launch(HEALTH_PERMISSIONS)
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Permission launcher failed: ${e.message}")
-            // fallback: Health Connect 설정 화면 직접 열기
-            showHealthConnectFallbackDialog()
+        // Android 14+ : 표준 권한으로 확인
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val granted = checkSelfPermission(SLEEP_PERMISSION) ==
+                    android.content.pm.PackageManager.PERMISSION_GRANTED
+            Log.d(TAG, "Android 14+ runtime permission granted: $granted")
+            applyPermissionState(granted)
+        } else {
+            // Android 13 이하 : HC SDK로 확인
+            lifecycleScope.launch {
+                val granted = HealthConnectClient.getOrCreate(this@MainActivity)
+                    .permissionController.getGrantedPermissions()
+                    .containsAll(HEALTH_PERMISSIONS)
+                applyPermissionState(granted)
+            }
         }
     }
 
-    private fun showHealthConnectFallbackDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Health Connect 권한 설정")
-            .setMessage(
-                "자동 권한 요청에 실패했습니다.\n\n" +
-                "Health Connect 앱 → 앱 권한 → '수면 알람' → " +
-                "'수면' 항목을 직접 허용해주세요."
-            )
-            .setPositiveButton("Health Connect 열기") { _, _ ->
-                try {
-                    startActivity(
-                        packageManager.getLaunchIntentForPackage(
-                            "com.google.android.apps.healthdata"
-                        ) ?: Intent(Intent.ACTION_VIEW, Uri.parse(
-                            "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"
-                        ))
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Health Connect 앱을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("취소", null)
-            .show()
+    private fun applyPermissionState(granted: Boolean) {
+        btnToggle.isEnabled = granted
+        if (granted) {
+            btnPermission.text = "Health Connect 권한 허용됨 ✓"
+            btnPermission.isEnabled = false
+        } else {
+            btnPermission.text = "Health Connect 권한 허용"
+            btnPermission.isEnabled = true
+        }
+        updateUI()
+    }
+
+    private fun requestHealthPermissions() {
+        val sdkStatus = HealthConnectClient.getSdkStatus(this)
+        if (sdkStatus != HealthConnectClient.SDK_AVAILABLE) {
+            startActivity(Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")))
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14+ : 표준 런타임 권한 요청
+            Log.d(TAG, "Requesting via runtime permission (Android 14+)")
+            runtimePermissionLauncher.launch(arrayOf(SLEEP_PERMISSION))
+        } else {
+            // Android 13 이하 : Health Connect SDK 방식
+            Log.d(TAG, "Requesting via HC SDK (Android 13-)")
+            sdkPermissionLauncher.launch(HEALTH_PERMISSIONS)
+        }
+    }
+
+    private fun onPermissionResult(granted: Boolean) {
+        applyPermissionState(granted)
+        if (granted) {
+            Toast.makeText(this, "수면 데이터 권한이 허용되었습니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "수면 데이터 권한이 거부되었습니다.\nHealth Connect에서 직접 허용해주세요.", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun onToggleMonitoring() {
@@ -226,9 +220,7 @@ class MainActivity : AppCompatActivity() {
 
         val workRequest = PeriodicWorkRequest.Builder(
             SleepMonitorWorker::class.java, 15, TimeUnit.MINUTES
-        ).setConstraints(Constraints.Builder().build())
-         .addTag(WORK_TAG)
-         .build()
+        ).addTag(WORK_TAG).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG, ExistingPeriodicWorkPolicy.REPLACE, workRequest
@@ -245,10 +237,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         val active = prefs.isMonitoringActive
         btnToggle.text = if (active) "모니터링 중지" else "수면 모니터링 시작"
-        tvStatus.text = if (active) "수면 모니터링 중 (15분 주기 확인)" else "모니터링 중지됨"
+        tvStatus.text  = if (active) "수면 모니터링 중 (15분 주기 확인)" else "모니터링 중지됨"
         tvSleepProgress.visibility = if (active) View.VISIBLE else View.GONE
         if (active) tvSleepProgress.text = "수면 데이터 확인 중..."
-        pickerHours.isEnabled = !active
+        pickerHours.isEnabled   = !active
         pickerMinutes.isEnabled = !active
     }
 }
