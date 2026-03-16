@@ -4,13 +4,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
@@ -125,12 +128,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionAndUpdateUI() {
-        if (!HealthConnectHelper.isAvailable(this)) {
-            btnPermission.text = "Health Connect 앱 설치 필요"
-            btnPermission.isEnabled = false
-            tvStatus.text = "Health Connect가 설치되어 있지 않습니다."
-            return
+        val status = HealthConnectClient.getSdkStatus(this)
+        Log.d("MainActivity", "Health Connect SDK status: $status")
+
+        when (status) {
+            HealthConnectClient.SDK_UNAVAILABLE -> {
+                btnPermission.text = "Health Connect 설치 필요 (탭하여 설치)"
+                tvStatus.text = "Health Connect 앱이 설치되어 있지 않습니다."
+                return
+            }
+            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                btnPermission.text = "Health Connect 업데이트 필요 (탭하여 업데이트)"
+                tvStatus.text = "Health Connect 앱을 업데이트해주세요."
+                return
+            }
         }
+
+        // SDK_AVAILABLE
         lifecycleScope.launch {
             val granted = HealthConnectClient.getOrCreate(this@MainActivity)
                 .permissionController
@@ -146,11 +160,53 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestHealthPermissions() {
-        if (!HealthConnectHelper.isAvailable(this)) {
-            Toast.makeText(this, "Health Connect 앱을 먼저 설치해주세요.", Toast.LENGTH_LONG).show()
+        val status = HealthConnectClient.getSdkStatus(this)
+
+        // 미설치 또는 업데이트 필요 → Play 스토어로 이동
+        if (status != HealthConnectClient.SDK_AVAILABLE) {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(
+                    "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"
+                )))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Health Connect 앱을 Play 스토어에서 설치해주세요.", Toast.LENGTH_LONG).show()
+            }
             return
         }
-        permissionLauncher.launch(HEALTH_PERMISSIONS)
+
+        // 권한 요청 시도
+        try {
+            permissionLauncher.launch(HEALTH_PERMISSIONS)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Permission launcher failed: ${e.message}")
+            // fallback: Health Connect 설정 화면 직접 열기
+            showHealthConnectFallbackDialog()
+        }
+    }
+
+    private fun showHealthConnectFallbackDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Health Connect 권한 설정")
+            .setMessage(
+                "자동 권한 요청에 실패했습니다.\n\n" +
+                "Health Connect 앱 → 앱 권한 → '수면 알람' → " +
+                "'수면' 항목을 직접 허용해주세요."
+            )
+            .setPositiveButton("Health Connect 열기") { _, _ ->
+                try {
+                    startActivity(
+                        packageManager.getLaunchIntentForPackage(
+                            "com.google.android.apps.healthdata"
+                        ) ?: Intent(Intent.ACTION_VIEW, Uri.parse(
+                            "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"
+                        ))
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Health Connect 앱을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("취소", null)
+            .show()
     }
 
     private fun onToggleMonitoring() {
