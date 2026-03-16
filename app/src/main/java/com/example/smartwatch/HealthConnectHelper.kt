@@ -56,7 +56,7 @@ class HealthConnectHelper(context: Context) {
                 totalSleepMs += session.endTime.toEpochMilli() - session.startTime.toEpochMilli()
             } else {
                 for (stage in stages) {
-                    if (stage.stage != SleepSessionRecord.StageType.STAGE_TYPE_AWAKE) {
+                    if (stage.stage != SleepSessionRecord.STAGE_TYPE_AWAKE) {
                         totalSleepMs += stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
                     }
                 }
