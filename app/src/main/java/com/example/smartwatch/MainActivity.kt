@@ -149,17 +149,14 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // PermissionController intent가 실제로 resolve 되는지 먼저 확인
-        val contract = PermissionController.createRequestPermissionResultContract()
-        val intent   = contract.createIntent(this, HEALTH_PERMISSIONS)
-        val resolved = intent.resolveActivity(packageManager)
-        Log.d(TAG, "HC permission intent=$intent  resolved=$resolved")
-
-        if (resolved != null) {
+        // PermissionController 런처를 직접 실행 — resolveActivity 체크 없이 항상 시도
+        // (Android 14 내장 HC는 resolveActivity가 null을 반환해도 실제론 처리 가능)
+        try {
+            Log.d(TAG, "Launching HC permission dialog")
             permissionLauncher.launch(HEALTH_PERMISSIONS)
-        } else {
-            // intent를 resolve할 수 없음 → 직접 HC 설정 화면 열기
-            Log.w(TAG, "PermissionController intent unresolvable, opening HC settings")
+        } catch (e: Exception) {
+            // ActivityNotFoundException 등 — HC 설정 화면으로 직접 이동
+            Log.w(TAG, "permissionLauncher failed: ${e.message}, falling back to HC settings")
             openHealthConnectSettings()
         }
     }
