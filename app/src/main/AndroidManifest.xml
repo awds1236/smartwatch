@@ -19,7 +19,10 @@
         Android 11 이상에서 Health Connect 앱 존재 여부 확인 및 권한 요청에 필요.
     -->
     <queries>
+        <!-- Google Health Connect -->
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- Samsung 통합 Health Connect (일부 Galaxy 기기) -->
+        <package android:name="com.samsung.android.healthconnect" />
     </queries>
 
     <application
