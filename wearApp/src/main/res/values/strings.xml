@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smartwatch Wear</string>
+    <string name="alarm_title">알람</string>
+    <string name="alarm_message">목표 수면 시간 달성!</string>
+    <string name="btn_dismiss">해제</string>
+</resources>
