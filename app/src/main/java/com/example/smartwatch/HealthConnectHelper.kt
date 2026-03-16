@@ -48,6 +48,9 @@ class HealthConnectHelper(context: Context) {
 
         val records = client.readRecords(request).records
 
+        // AWAKE = 1, OUT_OF_BED = 3 제외하고 실제 수면 시간만 합산
+        // (상수가 버전마다 다를 수 있어 정수값으로 직접 비교)
+        val awakeTypes = setOf(1, 3)
         var totalSleepMs = 0L
         for (session in records) {
             val stages = session.stages
@@ -55,7 +58,7 @@ class HealthConnectHelper(context: Context) {
                 totalSleepMs += session.endTime.toEpochMilli() - session.startTime.toEpochMilli()
             } else {
                 for (stage in stages) {
-                    if (stage.stage != SleepSessionRecord.STAGE_TYPE_AWAKE) {
+                    if (stage.stage !in awakeTypes) {
                         totalSleepMs += stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
                     }
                 }
