@@ -1,5 +1,20 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+}
+
+// kotlin-stdlib-jdk7/jdk8은 Kotlin 1.8부터 kotlin-stdlib에 통합됨.
+// play-services-wearable 등이 구버전을 전이 의존성으로 끌어오는 경우 충돌 방지.
+subprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && (details.requested.name == 'kotlin-stdlib-jdk7'
+                     || details.requested.name == 'kotlin-stdlib-jdk8')) {
+                details.useTarget("org.jetbrains.kotlin:kotlin-stdlib:${details.requested.version}")
+                details.because("kotlin-stdlib-jdk7/jdk8 merged into kotlin-stdlib since 1.8")
+            }
+        }
+    }
 }
