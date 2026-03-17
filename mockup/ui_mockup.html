@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수면 알람 앱 UI 목업</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  h1.page-title {
+    color: #BB86FC;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .page-subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  /* Navigation Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 40px;
+    max-width: 900px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: 1.5px solid #BB86FC;
+    background: transparent;
+    color: #BB86FC;
+    border-radius: 24px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { background: rgba(187,134,252,0.1); }
+  .tab-btn.active {
+    background: #BB86FC;
+    color: #1a1a2e;
+    font-weight: 700;
+  }
+
+  /* Phone Frame */
+  .phone-frame {
+    width: 375px;
+    min-height: 720px;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 3px #333;
+    position: relative;
+    background: #121212;
+    display: none;
+  }
+  .phone-frame.active { display: block; }
+
+  /* Watch Frame */
+  .watch-frame {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 6px #333, 0 0 0 8px #222;
+    background: #1A1A2E;
+    display: none;
+  }
+  .watch-frame.active { display: flex; align-items: center; justify-content: center; }
+
+  /* Status Bar */
+  .status-bar {
+    height: 44px;
+    background: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .status-bar .time { font-weight: 700; }
+  .status-bar .icons { display: flex; gap: 4px; font-size: 10px; }
+
+  /* Screen Content */
+  .screen-content {
+    height: calc(100% - 44px);
+    overflow-y: auto;
+    padding: 0 20px 32px;
+  }
+  .screen-content::-webkit-scrollbar { width: 0; }
+
+  /* ===== MAIN SCREEN ===== */
+  .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 4px;
+  }
+  .main-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .settings-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #aaa;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .main-subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 20px;
+  }
+
+  /* Card */
+  .card {
+    background: #1e1e2e;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 14px;
+  }
+
+  /* Time Picker Mock */
+  .picker-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .picker-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .picker-value {
+    font-size: 40px;
+    font-weight: 700;
+    color: #BB86FC;
+    line-height: 1;
+  }
+  .picker-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+  .picker-ghost {
+    font-size: 22px;
+    color: #444;
+    line-height: 1.3;
+  }
+  .picker-separator {
+    font-size: 32px;
+    font-weight: 700;
+    color: #555;
+  }
+
+  /* Summary */
+  .summary-text {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* Deadline Picker */
+  .deadline-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .deadline-time {
+    font-size: 36px;
+    font-weight: 700;
+    color: #BB86FC;
+  }
+  .deadline-ampm {
+    font-size: 16px;
+    font-weight: 600;
+    color: #BB86FC;
+    opacity: 0.7;
+  }
+
+  /* Active Alarm Card */
+  .active-card {
+    background: linear-gradient(135deg, #2d1b69, #1e1e2e);
+    border: 1.5px solid rgba(187,134,252,0.3);
+  }
+  .active-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .active-icon { font-size: 18px; }
+  .active-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e0e0e0;
+  }
+  .badge {
+    background: #6750A4;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+  .alarm-time-display {
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin: 8px 0 4px;
+  }
+  .remaining-text {
+    text-align: center;
+    font-size: 13px;
+    color: #BB86FC;
+    margin-bottom: 12px;
+  }
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 12px 0;
+  }
+  .goal-info {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+  }
+  .goal-info strong { color: #BB86FC; }
+
+  /* Status Card */
+  .status-card {
+    background: #1e1e2e;
+    text-align: center;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .status-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4CAF50;
+  }
+  .status-sub {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-start {
+    background: #6200EE;
+    color: #fff;
+  }
+  .btn-start:hover { background: #7c3aed; }
+  .btn-stop {
+    background: transparent;
+    color: #ef4444;
+    border: 1.5px solid #ef4444;
+  }
+  .btn-permission {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(187,134,252,0.4);
+    background: transparent;
+    color: #BB86FC;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+
+  /* ===== ALARM SCREEN ===== */
+  .alarm-screen {
+    background: #6200EE;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 32px;
+    text-align: center;
+  }
+  .alarm-emoji { font-size: 72px; margin-bottom: 20px; }
+  .alarm-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .alarm-subtitle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 40px;
+  }
+  .btn-dismiss {
+    padding: 14px 48px;
+    border-radius: 28px;
+    border: 2px solid rgba(255,255,255,0.7);
+    background: transparent;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-dismiss:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* ===== SLEEP SOUNDS SCREEN ===== */
+  .sounds-header {
+    padding: 16px 0 4px;
+  }
+  .sounds-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .sounds-subtitle {
+    font-size: 14px;
+    color: #888;
+    margin: 4px 0 6px;
+  }
+  .sounds-info {
+    font-size: 12px;
+    color: #6200EE;
+    background: rgba(98,0,238,0.1);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  /* Now Playing */
+  .now-playing {
+    background: rgba(98,0,238,0.15);
+    border: 1.5px solid rgba(187,134,252,0.3);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .np-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #BB86FC;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .np-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .btn-stop-sound {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #BB86FC;
+    background: transparent;
+    color: #BB86FC;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Sound Card */
+  .sound-card {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: #1e1e2e;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .sound-card:hover {
+    background: #252538;
+    border-color: rgba(187,134,252,0.2);
+  }
+  .sound-card.selected {
+    border-color: #BB86FC;
+    background: rgba(98,0,238,0.08);
+  }
+  .sound-card.playing {
+    border-color: #BB86FC;
+    background: rgba(98,0,238,0.12);
+  }
+  .sound-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .sound-info {
+    margin-left: 14px;
+    flex: 1;
+  }
+  .sound-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+  .sound-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .sound-play-icon {
+    color: #BB86FC;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .sound-card:hover .sound-play-icon,
+  .sound-card.playing .sound-play-icon { opacity: 1; }
+
+  .btn-skip {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: transparent;
+    color: #888;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .btn-skip:hover { color: #BB86FC; }
+
+  /* ===== SETTINGS SCREEN ===== */
+  .settings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0 16px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #ccc;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .settings-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Radio Group */
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .radio-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    cursor: pointer;
+  }
+  .radio-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .radio-item.active .radio-circle {
+    border-color: #BB86FC;
+  }
+  .radio-item.active .radio-circle::after {
+    content: '';
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #BB86FC;
+  }
+  .radio-label {
+    font-size: 15px;
+    color: #ccc;
+  }
+
+  /* Switch Toggle */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  .switch-left {
+    display: flex;
+    flex-direction: column;
+  }
+  .switch-label {
+    font-size: 15px;
+    color: #e0e0e0;
+  }
+  .switch-status {
+    font-size: 12px;
+    color: #4CAF50;
+    margin-top: 2px;
+  }
+  .toggle {
+    width: 50px; height: 28px;
+    border-radius: 14px;
+    background: #BB86FC;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle::after {
+    content: '';
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    transition: all 0.2s;
+  }
+  .toggle.off {
+    background: #444;
+  }
+  .toggle.off::after {
+    right: auto;
+    left: 3px;
+  }
+
+  .settings-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 12px 0;
+  }
+  .sound-select-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 10px;
+  }
+
+  /* ===== HEALTH RATIONALE SCREEN ===== */
+  .rationale-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 32px;
+    text-align: center;
+  }
+  .rationale-emoji { font-size: 56px; margin-bottom: 20px; }
+  .rationale-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .rationale-body {
+    font-size: 14px;
+    color: #aaa;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    text-align: left;
+  }
+  .btn-confirm {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #6200EE;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* ===== WATCH SCREEN ===== */
+  .watch-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+  }
+  .watch-emoji { font-size: 36px; margin-bottom: 8px; }
+  .watch-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .watch-sub {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 14px;
+  }
+  .btn-watch-dismiss {
+    padding: 10px 40px;
+    border-radius: 24px;
+    border: none;
+    background: #7C4DFF;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Screens layout */
+  .screens-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .screen-label {
+    color: #888;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .screen-wrapper {
+    display: none;
+  }
+  .screen-wrapper.active {
+    display: block;
+  }
+
+  /* Sleep data card */
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .data-label { font-size: 13px; color: #888; }
+  .data-value { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+  .data-value.positive { color: #4CAF50; }
+  .data-value.negative { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">수면 알람 앱 UI 목업</h1>
+<p class="page-subtitle">각 화면을 탭하여 확인하세요</p>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showScreen('main-idle')">메인 (대기)</button>
+  <button class="tab-btn" onclick="showScreen('main-active')">메인 (모니터링)</button>
+  <button class="tab-btn" onclick="showScreen('sounds')">수면 소리</button>
+  <button class="tab-btn" onclick="showScreen('alarm')">알람</button>
+  <button class="tab-btn" onclick="showScreen('settings')">설정</button>
+  <button class="tab-btn" onclick="showScreen('rationale')">권한 안내</button>
+  <button class="tab-btn" onclick="showScreen('watch')">워치 알람</button>
+</div>
+
+<div class="screens-area">
+
+  <!-- ==================== MAIN SCREEN (IDLE) ==================== -->
+  <div class="screen-wrapper active" id="screen-main-idle">
+    <div class="screen-label">메인 화면 — 대기 상태</div>
+    <div class="phone-frame active">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <span class="icons">📶 🔋</span>
+      </div>
+      <div class="screen-content">
+        <div class="main-header">
+          <h2>수면 알람</h2>
+          <button class="settings-btn">⚙</button>
+        </div>
+        <p class="main-subtitle">원하는 수면 시간을 설정하세요</p>
+
+        <!-- Goal Time Card -->
+        <div class="card">
+          <div class="card-title">목표 수면 시간</div>
+          <div class="card-desc">수면 목표를 달성하면 알람이 울립니다</div>
+          <div class="picker-row">
+            <div class="picker-col">
+              <span class="picker-ghost">6</span>
+              <span class="picker-value">7</span>
+              <span class="picker-ghost">8</span>
+              <span class="picker-label">시간</span>
+            </div>
+            <span class="picker-separator">:</span>
+            <div class="picker-col">
+              <span class="picker-ghost">20</span>
+              <span class="picker-value">30</span>
+              <span class="picker-ghost">40</span>
+              <span class="picker-label">분</span>
+            </div>
+          </div>
+          <p class="summary-text">목표: 7시간 30분</p>
+        </div>
+
+        <!-- Deadline Card -->
+        <div class="card">
+          <div class="card-title">최대 기상 시간</div>
+          <div class="card-desc">이 시간까지 목표를 달성하지 못하면 알람이 울립니다</div>
+          <div class="deadline-picker">
+            <span class="deadline-time">07:30</span>
+            <span class="deadline-ampm">AM</span>
+          </div>
+        </div>
+
+        <!-- Permission Button -->
+        <button class="btn-permission">🛏️ 건강 데이터 접근 권한 허용</button>
+
+        <!-- Start Button -->
+        <button class="btn-primary btn-start">수면 모니터링 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN SCREEN (ACTIVE MONITORING) ==================== -->
+  <div class="screen-wrapper" id="screen-main-active">
+    <div class="screen-label">메인 화면 — 모니터링 중</div>
+    <div class="phone-frame active">
+      <div class="status-bar">
+        <span class="time">11:52</span>
+        <span class="icons">📶 🔋</span>
+      </div>
+      <div class="screen-content">
+        <div class="main-header">
+          <h2>수면 알람</h2>
+          <button class="settings-btn">⚙</button>
+        </div>
+        <p class="main-subtitle">원하는 수면 시간을 설정하세요</p>
+
+        <!-- Goal Time Card (disabled look) -->
+        <div class="card" style="opacity: 0.5;">
+          <div class="card-title">목표 수면 시간</div>
+          <div class="picker-row">
+            <div class="picker-col">
+              <span class="picker-value" style="font-size: 32px;">7</span>
+              <span class="picker-label">시간</span>
+            </div>
+            <span class="picker-separator">:</span>
+            <div class="picker-col">
+              <span class="picker-value" style="font-size: 32px;">30</span>
+              <span class="picker-label">분</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Alarm Card -->
+        <div class="card active-card">
+          <div class="active-header">
+            <span class="active-icon">⏰</span>
+            <span class="active-label">설정된 알람</span>
+            <span class="badge">ON</span>
+          </div>
+          <div class="alarm-time-display">07:30</div>
+          <div class="remaining-text">⏱ 남은 시간: 7시간 38분</div>
+          <div class="divider"></div>
+          <div class="goal-info">
+            수면 목표 <strong>7시간 30분</strong> 달성 시 알람
+          </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="card status-card">
+          <div>
+            <span class="status-dot"></span>
+            <span class="status-text">수면 모니터링 중</span>
+          </div>
+          <p class="status-sub">1분 주기로 수면 데이터를 확인합니다</p>
+        </div>
+
+        <!-- Sleep Data Card -->
+        <div class="card">
+          <div class="card-title">수면 데이터</div>
+          <div style="margin-top: 10px;">
+            <div class="data-row">
+              <span class="data-label">수면 세션</span>
+              <span class="data-value">4시간 12분</span>
+            </div>
+            <div class="divider"></div>
+            <div class="data-row">
+              <span class="data-label">실제 수면</span>
+              <span class="data-value">3시간 48분</span>
+            </div>
+            <div class="divider"></div>
+            <div class="data-row">
+              <span class="data-label">목표까지</span>
+              <span class="data-value negative">−3시간 42분</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stop Button -->
+        <button class="btn-primary btn-stop">모니터링 중지</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SLEEP SOUNDS SCREEN ==================== -->
+  <div class="screen-wrapper" id="screen-sounds">
+    <div class="screen-label">수면 소리 선택</div>
+    <div class="phone-frame active">
+      <div class="status-bar">
+        <span class="time">11:30</span>
+        <span class="icons">📶 🔋</span>
+      </div>
+      <div class="screen-content">
+        <div class="sounds-header">
+          <h2>수면 소리</h2>
+        </div>
+        <p class="sounds-subtitle">수면에 도움이 되는 소리를 선택하세요</p>
+        <div class="sounds-info">🔈 수면 감지 후 30분 뒤 자동으로 소리가 꺼집니다</div>
+
+        <!-- Now Playing -->
+        <div class="now-playing">
+          <div class="np-label">♪ 재생 중</div>
+          <div class="np-title">🌧️ 잔잔한 빗소리</div>
+          <button class="btn-stop-sound">소리 끄기</button>
+        </div>
+
+        <!-- Sound List -->
+        <div class="sound-card playing">
+          <div class="sound-icon">🌧️</div>
+          <div class="sound-info">
+            <div class="sound-name">잔잔한 빗소리</div>
+            <div class="sound-desc">부드럽게 내리는 비</div>
+          </div>
+          <span class="sound-play-icon">♪</span>
+        </div>
+        <div class="sound-card">
+          <div class="sound-icon">💧</div>
+          <div class="sound-info">
+            <div class="sound-name">창문 위 빗방울</div>
+            <div class="sound-desc">창문에 떨어지는 빗방울 ASMR</div>
+          </div>
+          <span class="sound-play-icon">▶</span>
+        </div>
+        <div class="sound-card">
+          <div class="sound-icon">🌬️</div>
+          <div class="sound-info">
+            <div class="sound-name">빗소리 ASMR</div>
+            <div class="sound-desc">비 오는 창가의 편안한 소리</div>
+          </div>
+          <span class="sound-play-icon">▶</span>
+        </div>
+        <div class="sound-card">
+          <div class="sound-icon">🌆</div>
+          <div class="sound-info">
+            <div class="sound-name">마을의 비 오는 날</div>
+            <div class="sound-desc">새소리와 함께하는 비 오는 마을</div>
+          </div>
+          <span class="sound-play-icon">▶</span>
+        </div>
+        <div class="sound-card">
+          <div class="sound-icon">🌲</div>
+          <div class="sound-info">
+            <div class="sound-name">산속 소리</div>
+            <div class="sound-desc">자연 속 숲의 소리</div>
+          </div>
+          <span class="sound-play-icon">▶</span>
+        </div>
+        <div class="sound-card">
+          <div class="sound-icon">🌿</div>
+          <div class="sound-info">
+            <div class="sound-name">산속 소리 2</div>
+            <div class="sound-desc">깊은 숲속의 평화로운 소리</div>
+          </div>
+          <span class="sound-play-icon">▶</span>
+        </div>
+
+        <button class="btn-skip">소리 없이 모니터링 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ALARM SCREEN ==================== -->
+  <div class="screen-wrapper" id="screen-alarm">
+    <div class="screen-label">알람 화면</div>
+    <div class="phone-frame active">
+      <div class="alarm-screen">
+        <div class="alarm-emoji">⏰</div>
+        <div class="alarm-title">일어날 시간이에요!</div>
+        <div class="alarm-subtitle">목표 수면 시간을 달성했습니다</div>
+        <button class="btn-dismiss">알람 해제</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS SCREEN ==================== -->
+  <div class="screen-wrapper" id="screen-settings">
+    <div class="screen-label">설정 화면</div>
+    <div class="phone-frame active">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <span class="icons">📶 🔋</span>
+      </div>
+      <div class="screen-content">
+        <div class="settings-header">
+          <button class="back-btn">←</button>
+          <h2>설정</h2>
+        </div>
+
+        <!-- Theme Card -->
+        <div class="card">
+          <div class="card-title">화면 테마</div>
+          <div class="card-desc">앱의 밝기 모드를 설정합니다</div>
+          <div class="radio-group">
+            <div class="radio-item">
+              <div class="radio-circle"></div>
+              <span class="radio-label">시스템 설정 따르기</span>
+            </div>
+            <div class="radio-item">
+              <div class="radio-circle"></div>
+              <span class="radio-label">라이트 모드</span>
+            </div>
+            <div class="radio-item active">
+              <div class="radio-circle"></div>
+              <span class="radio-label">다크 모드</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sound Card -->
+        <div class="card">
+          <div class="card-title">수면 소리</div>
+          <div class="card-desc">모니터링 중 수면 소리를 관리합니다</div>
+
+          <div class="switch-row">
+            <div class="switch-left">
+              <span class="switch-label">소리 재생</span>
+              <span class="switch-status">재생 중: 잔잔한 빗소리</span>
+            </div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="settings-divider"></div>
+          <div class="sound-select-label">소리 선택</div>
+
+          <div class="sound-card selected" style="margin-bottom: 8px;">
+            <div class="sound-icon">🌧️</div>
+            <div class="sound-info">
+              <div class="sound-name">잔잔한 빗소리</div>
+              <div class="sound-desc">부드럽게 내리는 비</div>
+            </div>
+          </div>
+          <div class="sound-card" style="margin-bottom: 8px;">
+            <div class="sound-icon">💧</div>
+            <div class="sound-info">
+              <div class="sound-name">창문 위 빗방울</div>
+              <div class="sound-desc">창문에 떨어지는 빗방울 ASMR</div>
+            </div>
+          </div>
+          <div class="sound-card" style="margin-bottom: 8px;">
+            <div class="sound-icon">🌬️</div>
+            <div class="sound-info">
+              <div class="sound-name">빗소리 ASMR</div>
+              <div class="sound-desc">비 오는 창가의 편안한 소리</div>
+            </div>
+          </div>
+          <div class="sound-card" style="margin-bottom: 8px;">
+            <div class="sound-icon">🌆</div>
+            <div class="sound-info">
+              <div class="sound-name">마을의 비 오는 날</div>
+              <div class="sound-desc">새소리와 함께하는 비 오는 마을</div>
+            </div>
+          </div>
+          <div class="sound-card" style="margin-bottom: 8px;">
+            <div class="sound-icon">🌲</div>
+            <div class="sound-info">
+              <div class="sound-name">산속 소리</div>
+              <div class="sound-desc">자연 속 숲의 소리</div>
+            </div>
+          </div>
+          <div class="sound-card" style="margin-bottom: 8px;">
+            <div class="sound-icon">🌿</div>
+            <div class="sound-info">
+              <div class="sound-name">산속 소리 2</div>
+              <div class="sound-desc">깊은 숲속의 평화로운 소리</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HEALTH RATIONALE SCREEN ==================== -->
+  <div class="screen-wrapper" id="screen-rationale">
+    <div class="screen-label">권한 안내 화면</div>
+    <div class="phone-frame active">
+      <div class="rationale-screen">
+        <div class="rationale-emoji">🛏️</div>
+        <div class="rationale-title">수면 데이터 접근 권한</div>
+        <div class="rationale-body">
+          이 앱은 수면 목표 달성 여부를 확인하기 위해 Health Connect의 수면 데이터에 접근합니다.<br><br>
+          수면 세션 시간과 실제 수면 시간을 읽어 목표와 비교하며, 목표 달성 시 알람을 울립니다.<br><br>
+          수집된 데이터는 외부로 전송되지 않으며, 기기 내에서만 사용됩니다.
+        </div>
+        <button class="btn-confirm">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== WATCH ALARM SCREEN ==================== -->
+  <div class="screen-wrapper" id="screen-watch">
+    <div class="screen-label">Galaxy Watch 알람</div>
+    <div class="watch-frame active">
+      <div class="watch-content">
+        <div class="watch-emoji">⏰</div>
+        <div class="watch-title">일어날 시간!</div>
+        <div class="watch-sub">목표 수면 달성</div>
+        <button class="btn-watch-dismiss">해제</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(id) {
+  // Deactivate all
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.screen-wrapper').forEach(s => s.classList.remove('active'));
+
+  // Activate selected
+  const map = {
+    'main-idle': 0,
+    'main-active': 1,
+    'sounds': 2,
+    'alarm': 3,
+    'settings': 4,
+    'rationale': 5,
+    'watch': 6
+  };
+  document.querySelectorAll('.tab-btn')[map[id]].classList.add('active');
+  document.getElementById('screen-' + id).classList.add('active');
+}
+</script>
+
+</body>
+</html>
