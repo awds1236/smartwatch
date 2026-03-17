@@ -106,6 +106,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * 알림 권한 요청 런처 (Android 13+).
+     * 결과와 무관하게 알림은 best-effort로 표시하므로 그냥 무시.
+     */
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* 거부해도 모니터링 자체에는 영향 없음 */ }
+
+    /**
      * 수면 소리 선택 화면에서 돌아오면 실제 모니터링을 시작한다.
      */
     private val sleepSoundsLauncher = registerForActivityResult(
@@ -147,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         tvDeadlineCountdown = findViewById(R.id.tv_deadline_countdown)
 
         createCountdownNotificationChannel()
+        requestNotificationPermission()
         setupPickers()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
@@ -416,6 +425,16 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         return am.canScheduleExactAlarms()
+    }
+
+    /** Android 13+에서 알림 권한을 요청합니다. */
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val perm = android.Manifest.permission.POST_NOTIFICATIONS
+            if (checkSelfPermission(perm) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                notificationPermissionLauncher.launch(perm)
+            }
+        }
     }
 
     /** 정확한 알람 권한 설정 화면으로 이동합니다. */
