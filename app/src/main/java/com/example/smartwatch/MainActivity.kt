@@ -364,10 +364,8 @@ class MainActivity : AppCompatActivity() {
         val deadlineMillis = calculateDeadlineMillis(deadlineHour, deadlineMinute)
         prefs.setDeadlineMillis(deadlineMillis)
 
-        // 마감 시간으로 시스템 알람 설정 (Activity 전환 후 안정적 실행을 위해 짧은 딜레이)
-        Handler(Looper.getMainLooper()).postDelayed({
-            AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
-        }, 500)
+        // 마감 시간으로 시스템 알람 설정 (내부에서 기존 알람 삭제 후 새로 생성)
+        AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG,
@@ -400,13 +398,20 @@ class MainActivity : AppCompatActivity() {
     private fun stopMonitoring() {
         prefs.reset()
         SleepSoundService.stop(this)
-        AlarmReceiver.dismissDeadlineAlarm(this)
-        AlarmReceiver.dismissPreviousAlarm(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
-        // dismiss가 알람 앱을 열 수 있으므로 즉시 우리 앱으로 복귀
-        val bringBack = Intent(this, MainActivity::class.java)
-        bringBack.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        startActivity(bringBack)
+
+        // 알람 삭제를 순차적으로 실행하고, 마지막에 우리 앱으로 복귀
+        val handler = Handler(Looper.getMainLooper())
+        AlarmReceiver.dismissDeadlineAlarm(this)
+        handler.postDelayed({
+            AlarmReceiver.dismissPreviousAlarm(this)
+        }, 600)
+        handler.postDelayed({
+            val bringBack = Intent(this, MainActivity::class.java)
+            bringBack.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            startActivity(bringBack)
+        }, 1200)
+
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
 

@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.AlarmClock;
 import android.util.Log;
 
@@ -39,24 +41,33 @@ public class AlarmReceiver extends BroadcastReceiver {
         new Thread(() -> WatchNotifier.sendAlarmStart(context)).start();
     }
 
-    /** 기상 마감 시간으로 시스템 시계 앱에 알람을 설정합니다. */
+    /**
+     * 기상 마감 시간으로 시스템 시계 앱에 알람을 설정합니다.
+     * 기존 동일 라벨 알람을 먼저 삭제 후 새로 생성하여 시간 변경이 확실히 반영되도록 합니다.
+     */
     public static void setDeadlineAlarm(Context context, int hour, int minute) {
-        Intent alarmIntent = new Intent(AlarmClock.ACTION_SET_ALARM);
-        alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        alarmIntent.putExtra(AlarmClock.EXTRA_HOUR, hour);
-        alarmIntent.putExtra(AlarmClock.EXTRA_MINUTES, minute);
-        alarmIntent.putExtra(AlarmClock.EXTRA_MESSAGE, DEADLINE_ALARM_LABEL);
-        alarmIntent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
-        alarmIntent.putExtra(AlarmClock.EXTRA_VIBRATE, true);
+        // 1단계: 기존 마감 알람 삭제
+        dismissDeadlineAlarm(context);
 
-        try {
-            context.startActivity(alarmIntent);
-            String timeText = String.format("%d:%02d", hour, minute);
-            Log.i(TAG, "Deadline alarm set for " + timeText);
-            showAlarmSetNotification(context, timeText);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to set deadline alarm", e);
-        }
+        // 2단계: 삭제 처리 후 새 알람 생성 (알람 앱이 dismiss를 처리할 시간 확보)
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            Intent alarmIntent = new Intent(AlarmClock.ACTION_SET_ALARM);
+            alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            alarmIntent.putExtra(AlarmClock.EXTRA_HOUR, hour);
+            alarmIntent.putExtra(AlarmClock.EXTRA_MINUTES, minute);
+            alarmIntent.putExtra(AlarmClock.EXTRA_MESSAGE, DEADLINE_ALARM_LABEL);
+            alarmIntent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+            alarmIntent.putExtra(AlarmClock.EXTRA_VIBRATE, true);
+
+            try {
+                context.startActivity(alarmIntent);
+                String timeText = String.format("%d:%02d", hour, minute);
+                Log.i(TAG, "Deadline alarm set for " + timeText);
+                showAlarmSetNotification(context, timeText);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to set deadline alarm", e);
+            }
+        }, 1000);
     }
 
     /** 알람 설정 완료 알림을 표시합니다. */
