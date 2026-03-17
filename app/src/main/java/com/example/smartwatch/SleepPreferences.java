@@ -20,6 +20,7 @@ public class SleepPreferences {
     private static final String KEY_SOUND_ENABLED    = "sound_enabled";
     private static final String KEY_SOUND_RES_ID     = "sound_res_id";
     private static final String KEY_SOUND_TITLE      = "sound_title";
+    private static final String KEY_MONITORING_START_MILLIS = "monitoring_start_millis";
 
     /** 테마 모드 상수 */
     public static final int THEME_SYSTEM = 0;
@@ -94,12 +95,22 @@ public class SleepPreferences {
         prefs.edit().putLong(KEY_DEADLINE_MILLIS, millis).apply();
     }
 
+    /** 모니터링 시작 시각(epoch millis). 이 시점 이후의 수면만 카운트한다. */
+    public long getMonitoringStartMillis() {
+        return prefs.getLong(KEY_MONITORING_START_MILLIS, 0L);
+    }
+
+    public void setMonitoringStartMillis(long millis) {
+        prefs.edit().putLong(KEY_MONITORING_START_MILLIS, millis).apply();
+    }
+
     public void reset() {
         prefs.edit()
              .putBoolean(KEY_MONITORING, false)
              .putBoolean(KEY_ALARM_FIRED, false)
              .putBoolean(KEY_SLEEP_DETECTED, false)
              .putLong(KEY_DEADLINE_MILLIS, 0L)
+             .putLong(KEY_MONITORING_START_MILLIS, 0L)
              .apply();
     }
 

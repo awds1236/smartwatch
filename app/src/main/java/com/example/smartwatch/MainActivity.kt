@@ -264,7 +264,8 @@ class MainActivity : AppCompatActivity() {
     private fun loadSleepData() {
         lifecycleScope.launch {
             val data = runCatching {
-                HealthConnectHelper(this@MainActivity).readSleepData()
+                val startMillis = prefs.monitoringStartMillis
+                HealthConnectHelper(this@MainActivity).readSleepData(startMillis)
             }.getOrNull()
 
             if (data != null) {
@@ -430,6 +431,7 @@ class MainActivity : AppCompatActivity() {
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
         prefs.setSleepDetected(false)
+        prefs.setMonitoringStartMillis(System.currentTimeMillis())
 
         // 기상 마감 시간을 epoch millis로 계산하여 저장
         val deadlineHour = pickerDeadline.hour
