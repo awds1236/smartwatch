@@ -370,6 +370,10 @@ class MainActivity : AppCompatActivity() {
         AlarmReceiver.dismissDeadlineAlarm(this)
         AlarmReceiver.dismissPreviousAlarm(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
+        // dismiss가 알람 앱을 열 수 있으므로 즉시 우리 앱으로 복귀
+        val bringBack = Intent(this, MainActivity::class.java)
+        bringBack.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        startActivity(bringBack)
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
