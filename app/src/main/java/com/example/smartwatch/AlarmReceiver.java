@@ -1,10 +1,15 @@
 package com.example.smartwatch;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.provider.AlarmClock;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import java.util.Calendar;
 
@@ -15,6 +20,8 @@ import java.util.Calendar;
 public class AlarmReceiver extends BroadcastReceiver {
 
     private static final String TAG = "AlarmReceiver";
+    private static final String CHANNEL_ID = "alarm_info_channel";
+    private static final int NOTIFICATION_ID_DEADLINE = 1001;
     public static final String ALARM_LABEL = "수면 목표 달성";
     public static final String DEADLINE_ALARM_LABEL = "기상 마감 알람";
 
@@ -44,10 +51,43 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         try {
             context.startActivity(alarmIntent);
-            Log.i(TAG, "Deadline alarm set for " + hour
-                    + ":" + String.format("%02d", minute));
+            String timeText = String.format("%d:%02d", hour, minute);
+            Log.i(TAG, "Deadline alarm set for " + timeText);
+            showAlarmSetNotification(context, timeText);
         } catch (Exception e) {
             Log.e(TAG, "Failed to set deadline alarm", e);
+        }
+    }
+
+    /** 알람 설정 완료 알림을 표시합니다. */
+    private static void showAlarmSetNotification(Context context, String timeText) {
+        ensureNotificationChannel(context);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setContentTitle("기상 마감 알람 설정됨")
+                .setContentText(timeText + "에 알람이 설정되었습니다.")
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) {
+            manager.notify(NOTIFICATION_ID_DEADLINE, builder.build());
+        }
+    }
+
+    /** 알림 채널을 생성합니다 (Android 8.0+). */
+    private static void ensureNotificationChannel(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID, "알람 정보", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("알람 설정 알림");
+            NotificationManager manager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
         }
     }
 
