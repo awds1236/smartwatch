@@ -20,6 +20,12 @@ class HealthConnectHelper(context: Context) {
 
     private val context = context.applicationContext
 
+    /** 수면 세션 시간과 실제 수면 시간을 담는 데이터 클래스 */
+    data class SleepData(
+        val sessionMinutes: Long,
+        val actualSleepMinutes: Long
+    )
+
     companion object {
         private const val TAG = "HealthConnectHelper"
 
@@ -33,6 +39,13 @@ class HealthConnectHelper(context: Context) {
      * suspend 함수이므로 코루틴 컨텍스트에서 호출해야 합니다.
      */
     suspend fun readTotalSleepMinutes(): Long {
+        return readSleepData().actualSleepMinutes
+    }
+
+    /**
+     * 수면 세션 시간(전체)과 실제 수면 시간(AWAKE/OUT_OF_BED 제외)을 함께 반환합니다.
+     */
+    suspend fun readSleepData(): SleepData {
         val client = HealthConnectClient.getOrCreate(context)
 
         val windowStart: Instant = LocalDate.now(ZoneId.systemDefault())
@@ -48,27 +61,32 @@ class HealthConnectHelper(context: Context) {
 
         val records = client.readRecords(request).records
 
-        // AWAKE, OUT_OF_BED 단계를 제외하고 실제 수면 시간만 합산
         val awakeTypes = setOf(
             SleepSessionRecord.STAGE_TYPE_AWAKE,
             SleepSessionRecord.STAGE_TYPE_OUT_OF_BED
         )
-        var totalSleepMs = 0L
+
+        var totalSessionMs = 0L
+        var totalActualSleepMs = 0L
+
         for (session in records) {
+            totalSessionMs += Duration.between(session.startTime, session.endTime).toMillis()
+
             val stages = session.stages
             if (stages.isEmpty()) {
-                totalSleepMs += Duration.between(session.startTime, session.endTime).toMillis()
+                totalActualSleepMs += Duration.between(session.startTime, session.endTime).toMillis()
             } else {
                 for (stage in stages) {
                     if (stage.stage !in awakeTypes) {
-                        totalSleepMs += Duration.between(stage.startTime, stage.endTime).toMillis()
+                        totalActualSleepMs += Duration.between(stage.startTime, stage.endTime).toMillis()
                     }
                 }
             }
         }
 
-        val totalMinutes = Duration.ofMillis(totalSleepMs).toMinutes()
-        Log.d(TAG, "Total sleep: ${totalMinutes}min (${records.size} sessions)")
-        return totalMinutes
+        val sessionMinutes = Duration.ofMillis(totalSessionMs).toMinutes()
+        val actualMinutes = Duration.ofMillis(totalActualSleepMs).toMinutes()
+        Log.d(TAG, "Session: ${sessionMinutes}min, Actual sleep: ${actualMinutes}min (${records.size} sessions)")
+        return SleepData(sessionMinutes, actualMinutes)
     }
 }
