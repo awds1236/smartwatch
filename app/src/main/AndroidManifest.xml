@@ -75,6 +75,12 @@
             android:launchMode="singleTask"
             android:excludeFromRecents="true" />
 
+        <!-- 설정 화면 -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="설정" />
+
         <!-- 수면 소리 선택 화면 -->
         <activity
             android:name=".SleepSoundsActivity"

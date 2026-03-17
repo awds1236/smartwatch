@@ -12,14 +12,31 @@
         android:padding="24dp">
 
         <!-- 헤더 -->
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="수면 알람"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            android:layout_marginBottom="4dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="수면 알람"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
+
+            <ImageButton
+                android:id="@+id/btn_settings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_menu_manage"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="설정"
+                android:scaleType="centerInside" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"

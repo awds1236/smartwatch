@@ -15,6 +15,15 @@ public class SleepPreferences {
     private static final String KEY_DEADLINE_HOUR   = "deadline_hour";
     private static final String KEY_DEADLINE_MINUTE = "deadline_minute";
     private static final String KEY_DEADLINE_MILLIS = "deadline_millis";
+    private static final String KEY_THEME_MODE       = "theme_mode";
+    private static final String KEY_SOUND_ENABLED    = "sound_enabled";
+    private static final String KEY_SOUND_RES_ID     = "sound_res_id";
+    private static final String KEY_SOUND_TITLE      = "sound_title";
+
+    /** 테마 모드 상수 */
+    public static final int THEME_SYSTEM = 0;
+    public static final int THEME_LIGHT  = 1;
+    public static final int THEME_DARK   = 2;
 
     private final SharedPreferences prefs;
 
@@ -80,6 +89,45 @@ public class SleepPreferences {
              .putBoolean(KEY_MONITORING, false)
              .putBoolean(KEY_ALARM_FIRED, false)
              .putLong(KEY_DEADLINE_MILLIS, 0L)
+             .apply();
+    }
+
+    // ── 테마 설정 ──────────────────────────────────────────────────
+
+    /** 테마 모드 (0=시스템, 1=라이트, 2=다크). 기본값 시스템. */
+    public int getThemeMode() {
+        return prefs.getInt(KEY_THEME_MODE, THEME_SYSTEM);
+    }
+
+    public void setThemeMode(int mode) {
+        prefs.edit().putInt(KEY_THEME_MODE, mode).apply();
+    }
+
+    // ── 소리 설정 ──────────────────────────────────────────────────
+
+    /** 수면 소리 활성화 여부. 기본값 true. */
+    public boolean isSoundEnabled() {
+        return prefs.getBoolean(KEY_SOUND_ENABLED, true);
+    }
+
+    public void setSoundEnabled(boolean enabled) {
+        prefs.edit().putBoolean(KEY_SOUND_ENABLED, enabled).apply();
+    }
+
+    /** 선택된 소리의 raw 리소스 ID. 0이면 미선택. */
+    public int getSoundResId() {
+        return prefs.getInt(KEY_SOUND_RES_ID, 0);
+    }
+
+    /** 선택된 소리의 표시 제목. */
+    public String getSoundTitle() {
+        return prefs.getString(KEY_SOUND_TITLE, "");
+    }
+
+    public void setSelectedSound(int resId, String title) {
+        prefs.edit()
+             .putInt(KEY_SOUND_RES_ID, resId)
+             .putString(KEY_SOUND_TITLE, title)
              .apply();
     }
 }

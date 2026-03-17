@@ -85,6 +85,9 @@ public class SleepSoundsActivity extends AppCompatActivity {
     }
 
     private void onSoundSelected(int resId, String title) {
+        SleepPreferences prefs = new SleepPreferences(this);
+        prefs.setSelectedSound(resId, title);
+        prefs.setSoundEnabled(true);
         SleepSoundService.start(this, resId, title);
         updateNowPlayingUI(title);
         setResult(RESULT_OK);
