@@ -110,7 +110,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = getDeadlinePendingIntent(context);
         am.cancel(pi);
-        pi.cancel();
+        // pi.cancel()은 호출하지 않음 — PendingIntent를 무효화하면
+        // 이후 setDeadlineAlarm()에서 같은 request code로 재생성이 실패할 수 있음
         Log.d(TAG, "Deadline alarm cancelled");
     }
 
