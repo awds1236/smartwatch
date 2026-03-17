@@ -15,6 +15,7 @@ import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.TimePicker
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
@@ -79,6 +80,17 @@ class MainActivity : AppCompatActivity() {
         if (!hasAll) {
             // 다이얼로그가 열렸지만 거부된 경우, 또는 HC가 앱을 인식 못해 즉시 빈 결과를 반환한 경우
             showPermissionManualGuide()
+        }
+    }
+
+    /**
+     * 수면 소리 선택 화면에서 돌아오면 실제 모니터링을 시작한다.
+     */
+    private val sleepSoundsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            doStartMonitoring()
         }
     }
 
@@ -325,6 +337,13 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "최소 30분 이상 설정해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
+        // 수면 소리 선택 화면을 먼저 열고, 결과를 받으면 실제 모니터링 시작
+        sleepSoundsLauncher.launch(Intent(this, SleepSoundsActivity::class.java))
+    }
+
+    /** 수면 소리 선택(또는 스킵) 후 실제 모니터링을 시작한다. */
+    private fun doStartMonitoring() {
+        val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
@@ -345,6 +364,7 @@ class MainActivity : AppCompatActivity() {
                 .addTag(WORK_TAG).build()
         )
         Toast.makeText(this, "수면 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
+        updateUI()
     }
 
     /**
@@ -367,6 +387,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopMonitoring() {
         prefs.reset()
+        SleepSoundService.stop(this)
         AlarmReceiver.dismissDeadlineAlarm(this)
         AlarmReceiver.dismissPreviousAlarm(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)

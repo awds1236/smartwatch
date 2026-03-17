@@ -3,4 +3,18 @@
     <string name="alarm_dismiss">알람 해제</string>
     <string name="monitoring_start">수면 모니터링 시작</string>
     <string name="monitoring_stop">모니터링 중지</string>
+
+    <!-- 수면 소리 -->
+    <string name="sound_gentle_rain">잔잔한 빗소리</string>
+    <string name="sound_gentle_rain_desc">부드럽게 내리는 비</string>
+    <string name="sound_rain_drops">창문 위 빗방울</string>
+    <string name="sound_rain_drops_desc">창문에 떨어지는 빗방울 ASMR</string>
+    <string name="sound_rainy_window">빗소리 ASMR</string>
+    <string name="sound_rainy_window_desc">비 오는 창가의 편안한 소리</string>
+    <string name="sound_rainy_day">마을의 비 오는 날</string>
+    <string name="sound_rainy_day_desc">새소리와 함께하는 비 오는 마을</string>
+    <string name="sound_forest">산속 소리</string>
+    <string name="sound_forest_desc">자연 속 숲의 소리</string>
+    <string name="sound_forest_2">산속 소리 2</string>
+    <string name="sound_forest_2_desc">깊은 숲속의 평화로운 소리</string>
 </resources>
