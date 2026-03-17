@@ -325,18 +325,22 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "최소 30분 이상 설정해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
-        // 이전 수면 알람 정리 (누적 방지)
+        // 이전 알람 정리 (누적 방지)
         AlarmReceiver.dismissPreviousAlarm(this)
+        AlarmReceiver.dismissDeadlineAlarm(this)
 
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
 
         // 기상 마감 시간을 epoch millis로 계산하여 저장
-        val deadlineMillis = calculateDeadlineMillis(
-            pickerDeadline.hour, pickerDeadline.minute
-        )
+        val deadlineHour = pickerDeadline.hour
+        val deadlineMinute = pickerDeadline.minute
+        val deadlineMillis = calculateDeadlineMillis(deadlineHour, deadlineMinute)
         prefs.setDeadlineMillis(deadlineMillis)
+
+        // 마감 시간으로 시스템 알람 즉시 설정
+        AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG,
@@ -367,6 +371,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopMonitoring() {
         prefs.reset()
+        AlarmReceiver.dismissDeadlineAlarm(this)
+        AlarmReceiver.dismissPreviousAlarm(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
