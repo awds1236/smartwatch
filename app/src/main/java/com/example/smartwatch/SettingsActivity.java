@@ -200,7 +200,7 @@ public class SettingsActivity extends AppCompatActivity {
             ((MaterialCardView) card).setStrokeWidth(4);
             ((MaterialCardView) card).setStrokeColor(
                     com.google.android.material.color.MaterialColors.getColor(
-                            card, com.google.android.material.R.attr.colorPrimary));
+                            card, androidx.appcompat.R.attr.colorPrimary, 0));
         }
     }
 
