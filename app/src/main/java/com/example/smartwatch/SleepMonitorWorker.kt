@@ -44,7 +44,7 @@ class SleepMonitorWorker(
             Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min")
 
             if (sleepMinutes >= goalMinutes) {
-                Log.i(TAG, "Goal reached! Triggering alarm.")
+                Log.i(TAG, "Goal reached! Dismissing deadline alarm and triggering goal alarm.")
                 prefs.setAlarmFired(true)
                 triggerAlarm(ctx)
             }

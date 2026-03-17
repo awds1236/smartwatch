@@ -13,6 +13,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.NumberPicker
 import android.widget.TextView
+import android.widget.TimePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -50,6 +52,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvGoalSummary: TextView
     private lateinit var btnToggle: Button
     private lateinit var btnPermission: Button
+    private lateinit var pickerDeadline: TimePicker
+    private lateinit var tvDeadlineSummary: TextView
     private lateinit var cardSleepData: View
     private lateinit var tvSessionTime: TextView
     private lateinit var tvActualSleepTime: TextView
@@ -95,12 +99,15 @@ class MainActivity : AppCompatActivity() {
         btnToggle       = findViewById(R.id.btn_toggle)
         btnPermission   = findViewById(R.id.btn_permission)
 
+        pickerDeadline    = findViewById(R.id.picker_deadline)
+        tvDeadlineSummary = findViewById(R.id.tv_deadline_summary)
         cardSleepData    = findViewById(R.id.card_sleep_data)
         tvSessionTime    = findViewById(R.id.tv_session_time)
         tvActualSleepTime = findViewById(R.id.tv_actual_sleep_time)
         tvSleepDiff      = findViewById(R.id.tv_sleep_diff)
 
         setupPickers()
+        setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
     }
@@ -318,12 +325,22 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "최소 30분 이상 설정해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
-        // 이전 수면 알람 정리 (누적 방지)
+        // 이전 알람 정리 (누적 방지)
         AlarmReceiver.dismissPreviousAlarm(this)
+        AlarmReceiver.dismissDeadlineAlarm(this)
 
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
+
+        // 기상 마감 시간을 epoch millis로 계산하여 저장
+        val deadlineHour = pickerDeadline.hour
+        val deadlineMinute = pickerDeadline.minute
+        val deadlineMillis = calculateDeadlineMillis(deadlineHour, deadlineMinute)
+        prefs.setDeadlineMillis(deadlineMillis)
+
+        // 마감 시간으로 시스템 알람 즉시 설정
+        AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG,
@@ -334,8 +351,28 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "수면 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * 설정된 시/분을 기준으로 다음 마감 시각(epoch millis)을 계산합니다.
+     * 현재 시각보다 과거면 다음 날로 설정합니다.
+     */
+    private fun calculateDeadlineMillis(hour: Int, minute: Int): Long {
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        // 이미 지난 시간이면 다음 날로
+        if (cal.timeInMillis <= System.currentTimeMillis()) {
+            cal.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return cal.timeInMillis
+    }
+
     private fun stopMonitoring() {
         prefs.reset()
+        AlarmReceiver.dismissDeadlineAlarm(this)
+        AlarmReceiver.dismissPreviousAlarm(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
@@ -348,6 +385,7 @@ class MainActivity : AppCompatActivity() {
         if (active) tvSleepProgress.text = "수면 데이터 확인 중..."
         pickerHours.isEnabled   = !active
         pickerMinutes.isEnabled = !active
+        pickerDeadline.isEnabled = !active
     }
 
     // ── Picker 초기화 ──────────────────────────────────────────────
@@ -372,5 +410,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateGoalSummary(totalMinutes: Int) {
         tvGoalSummary.text = "${totalMinutes / 60}시간 ${totalMinutes % 60}분 수면 목표"
+    }
+
+    private fun setupDeadlinePicker() {
+        pickerDeadline.setIs24HourView(false)
+        pickerDeadline.hour = prefs.deadlineHour
+        pickerDeadline.minute = prefs.deadlineMinute
+        updateDeadlineSummary(prefs.deadlineHour, prefs.deadlineMinute)
+
+        pickerDeadline.setOnTimeChangedListener { _, hourOfDay, minute ->
+            prefs.setDeadlineTime(hourOfDay, minute)
+            updateDeadlineSummary(hourOfDay, minute)
+        }
+    }
+
+    private fun updateDeadlineSummary(hour: Int, minute: Int) {
+        val amPm = if (hour < 12) "오전" else "오후"
+        val displayHour = if (hour % 12 == 0) 12 else hour % 12
+        tvDeadlineSummary.text = "${amPm} ${displayHour}시 ${String.format("%02d", minute)}분까지 기상"
     }
 }
