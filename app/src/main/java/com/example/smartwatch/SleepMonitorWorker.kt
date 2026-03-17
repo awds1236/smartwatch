@@ -41,10 +41,19 @@ class SleepMonitorWorker(
         return try {
             val sleepMinutes = HealthConnectHelper(ctx).readTotalSleepMinutes()
             val goalMinutes = prefs.goalMinutes.toLong()
-            Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min")
+            val deadlineMillis = prefs.deadlineMillis
+            val now = System.currentTimeMillis()
+            Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min / Deadline in: ${(deadlineMillis - now) / 60000}min")
 
-            if (sleepMinutes >= goalMinutes) {
+            val goalReached = sleepMinutes >= goalMinutes
+            val deadlinePassed = deadlineMillis > 0 && now >= deadlineMillis
+
+            if (goalReached) {
                 Log.i(TAG, "Goal reached! Triggering alarm.")
+                prefs.setAlarmFired(true)
+                triggerAlarm(ctx)
+            } else if (deadlinePassed) {
+                Log.i(TAG, "Deadline passed (goal not reached). Triggering alarm.")
                 prefs.setAlarmFired(true)
                 triggerAlarm(ctx)
             }
