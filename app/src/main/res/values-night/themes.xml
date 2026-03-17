@@ -1,10 +1,25 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Dark theme. -->
-    <style name="Theme.Smartwatch" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <item name="android:statusBarColor">@color/purple_700</item>
+    <!-- Night theme: same as day (always dark sleep tracking theme) -->
+    <style name="Theme.Smartwatch" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/sleep_accent_coral</item>
+        <item name="colorOnPrimary">@color/sleep_bg_dark</item>
+        <item name="colorPrimaryContainer">@color/sleep_accent_coral_dark</item>
+        <item name="colorOnPrimaryContainer">@color/sleep_text_primary</item>
+
+        <item name="colorSecondary">@color/sleep_accent_coral</item>
+        <item name="colorOnSecondary">@color/sleep_bg_dark</item>
+
+        <item name="colorSurface">@color/sleep_bg_surface</item>
+        <item name="colorOnSurface">@color/sleep_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/sleep_text_secondary</item>
+        <item name="colorSurfaceVariant">@color/sleep_bg_surface_variant</item>
+        <item name="colorSurfaceContainerHigh">@color/sleep_bg_surface</item>
+
+        <item name="colorOutline">@color/sleep_outline</item>
+        <item name="colorOutlineVariant">@color/sleep_outline</item>
+
+        <item name="android:windowBackground">@color/sleep_bg_dark</item>
+        <item name="android:statusBarColor">@color/sleep_bg_dark</item>
+        <item name="android:navigationBarColor">@color/sleep_bg_dark</item>
     </style>
 </resources>

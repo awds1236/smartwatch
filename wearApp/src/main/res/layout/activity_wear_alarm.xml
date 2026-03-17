@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#1A1A2E"
+    android:background="#001A2F"
     android:padding="16dp">
 
     <TextView
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="일어날 시간!"
-        android:textColor="#FFFFFF"
+        android:textColor="#F7F7F7"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="6dp" />
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="목표 수면 달성"
-        android:textColor="#AAAAAA"
+        android:textColor="#9C9C9C"
         android:textSize="12sp"
         android:layout_marginBottom="20dp" />
 
@@ -36,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:text="해제"
-        android:textColor="#FFFFFF"
-        android:background="#7C4DFF" />
+        android:textColor="#001A2F"
+        android:background="#FF7262" />
 
 </LinearLayout>
