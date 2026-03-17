@@ -25,10 +25,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // 마감 알람 제거 (목표 달성으로 더 이상 필요 없음)
         dismissDeadlineAlarm(context);
 
-        // 이전 수면 목표 알람 제거 (누적 방지)
-        dismissAlarmByLabel(context, ALARM_LABEL);
-
-        // 시스템 시계 앱으로 알람 설정 (현재 + 1분)
+        // 시스템 시계 앱으로 알람 설정 (현재 + 1분, 동일 라벨은 덮어씀)
         setSystemAlarm(context);
 
         // 워치 알람 전송 (백그라운드 스레드)
@@ -37,9 +34,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     /** 기상 마감 시간으로 시스템 시계 앱에 알람을 설정합니다. */
     public static void setDeadlineAlarm(Context context, int hour, int minute) {
-        // 기존 마감 알람 제거
-        dismissDeadlineAlarm(context);
-
         Intent alarmIntent = new Intent(AlarmClock.ACTION_SET_ALARM);
         alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         alarmIntent.putExtra(AlarmClock.EXTRA_HOUR, hour);
@@ -67,11 +61,14 @@ public class AlarmReceiver extends BroadcastReceiver {
         dismissAlarmByLabel(context, ALARM_LABEL);
     }
 
-    /** 지정된 라벨의 알람을 시스템 시계 앱에서 제거합니다. */
+    /** 지정된 라벨의 알람을 시스템 시계 앱에서 제거합니다 (UI 전환 없이). */
     private static void dismissAlarmByLabel(Context context, String label) {
         try {
             Intent dismissIntent = new Intent(AlarmClock.ACTION_DISMISS_ALARM);
-            dismissIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            dismissIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    | Intent.FLAG_ACTIVITY_NO_HISTORY);
             dismissIntent.putExtra(AlarmClock.EXTRA_ALARM_SEARCH_MODE,
                     AlarmClock.ALARM_SEARCH_MODE_LABEL);
             dismissIntent.putExtra(AlarmClock.EXTRA_MESSAGE, label);
