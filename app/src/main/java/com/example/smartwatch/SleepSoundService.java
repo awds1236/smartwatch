@@ -30,6 +30,7 @@ public class SleepSoundService extends Service {
     public static final String EXTRA_SOUND_RES_ID = "extra_sound_res_id";
     public static final String EXTRA_SOUND_TITLE = "extra_sound_title";
     public static final String ACTION_STOP = "com.example.smartwatch.STOP_SLEEP_SOUND";
+    public static final String ACTION_SLEEP_DETECTED = "com.example.smartwatch.SLEEP_DETECTED";
 
     private static final long AUTO_STOP_DELAY_MS = 30 * 60 * 1000L; // 30분
     private static final long FADE_DURATION_MS = 30_000L; // 30초 페이드아웃
@@ -38,6 +39,7 @@ public class SleepSoundService extends Service {
     private MediaPlayer mediaPlayer;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private float currentVolume = 1.0f;
+    private boolean autoStopScheduled = false;
 
     private final Runnable fadeOutRunnable = new Runnable() {
         @Override
@@ -76,6 +78,16 @@ public class SleepSoundService extends Service {
             return START_NOT_STICKY;
         }
 
+        // 수면 감지 신호: 30분 카운트다운 시작
+        if (intent != null && ACTION_SLEEP_DETECTED.equals(intent.getAction())) {
+            if (mediaPlayer != null && mediaPlayer.isPlaying() && !autoStopScheduled) {
+                autoStopScheduled = true;
+                Log.d(TAG, "수면 감지 – 30분 후 자동 종료 예약");
+                handler.postDelayed(autoStopRunnable, AUTO_STOP_DELAY_MS);
+            }
+            return START_NOT_STICKY;
+        }
+
         int soundResId = intent != null ? intent.getIntExtra(EXTRA_SOUND_RES_ID, 0) : 0;
         String title = intent != null ? intent.getStringExtra(EXTRA_SOUND_TITLE) : "수면 소리";
         if (soundResId == 0) {
@@ -87,6 +99,7 @@ public class SleepSoundService extends Service {
         releasePlayer();
         handler.removeCallbacks(autoStopRunnable);
         handler.removeCallbacks(fadeOutRunnable);
+        autoStopScheduled = false;
 
         // Foreground notification
         startForeground(NOTIFICATION_ID, buildNotification(title != null ? title : "수면 소리"));
@@ -107,10 +120,9 @@ public class SleepSoundService extends Service {
             currentVolume = 1.0f;
             mediaPlayer.setVolume(currentVolume, currentVolume);
             mediaPlayer.start();
-            Log.d(TAG, "재생 시작: " + title);
+            Log.d(TAG, "재생 시작: " + title + " (수면 감지 대기 중)");
 
-            // 30분 후 자동 페이드아웃 → 종료
-            handler.postDelayed(autoStopRunnable, AUTO_STOP_DELAY_MS);
+            // 자동 종료는 수면 감지 시 시작됨 — 여기서는 예약하지 않음
         } catch (Exception e) {
             Log.e(TAG, "MediaPlayer 초기화 실패", e);
             stopSelf();
@@ -122,6 +134,7 @@ public class SleepSoundService extends Service {
     @Override
     public void onDestroy() {
         running = false;
+        autoStopScheduled = false;
         handler.removeCallbacks(autoStopRunnable);
         handler.removeCallbacks(fadeOutRunnable);
         releasePlayer();
@@ -211,5 +224,13 @@ public class SleepSoundService extends Service {
     public static void stop(Context context) {
         context.stopService(new Intent(context, SleepSoundService.class));
         running = false;
+    }
+
+    /** 수면 감지 시 호출 — 30분 후 자동 종료 카운트다운 시작 */
+    public static void notifySleepDetected(Context context) {
+        if (!running) return;
+        Intent intent = new Intent(context, SleepSoundService.class);
+        intent.setAction(ACTION_SLEEP_DETECTED);
+        context.startService(intent);
     }
 }

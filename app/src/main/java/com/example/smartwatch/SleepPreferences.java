@@ -12,6 +12,7 @@ public class SleepPreferences {
     private static final String KEY_GOAL_MINUTES  = "goal_minutes";
     private static final String KEY_MONITORING    = "monitoring_active";
     private static final String KEY_ALARM_FIRED   = "alarm_fired";
+    private static final String KEY_SLEEP_DETECTED = "sleep_detected";
     private static final String KEY_DEADLINE_HOUR   = "deadline_hour";
     private static final String KEY_DEADLINE_MINUTE = "deadline_minute";
     private static final String KEY_DEADLINE_MILLIS = "deadline_millis";
@@ -58,6 +59,15 @@ public class SleepPreferences {
         prefs.edit().putBoolean(KEY_ALARM_FIRED, fired).apply();
     }
 
+    /** 수면 상태가 처음 감지되었는지 여부 (수면 소리 자동 종료용). */
+    public boolean isSleepDetected() {
+        return prefs.getBoolean(KEY_SLEEP_DETECTED, false);
+    }
+
+    public void setSleepDetected(boolean detected) {
+        prefs.edit().putBoolean(KEY_SLEEP_DETECTED, detected).apply();
+    }
+
     /** 기상 마감 시간 (시). 기본값 8시. */
     public int getDeadlineHour() {
         return prefs.getInt(KEY_DEADLINE_HOUR, 8);
@@ -88,6 +98,7 @@ public class SleepPreferences {
         prefs.edit()
              .putBoolean(KEY_MONITORING, false)
              .putBoolean(KEY_ALARM_FIRED, false)
+             .putBoolean(KEY_SLEEP_DETECTED, false)
              .putLong(KEY_DEADLINE_MILLIS, 0L)
              .apply();
     }

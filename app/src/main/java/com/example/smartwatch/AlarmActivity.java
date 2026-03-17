@@ -83,6 +83,9 @@ public class AlarmActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        // 수면 소리도 정지
+        SleepSoundService.stop(this);
+
         // 워치 알람도 해제
         new Thread(() -> WatchNotifier.sendAlarmDismiss(getApplicationContext())).start();
 

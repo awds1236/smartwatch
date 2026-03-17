@@ -408,6 +408,7 @@ class MainActivity : AppCompatActivity() {
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
+        prefs.setSleepDetected(false)
 
         // 기상 마감 시간을 epoch millis로 계산하여 저장
         val deadlineHour = pickerDeadline.hour

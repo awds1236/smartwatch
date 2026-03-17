@@ -43,6 +43,13 @@ class SleepMonitorWorker(
             val goalMinutes = prefs.goalMinutes.toLong()
             Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min")
 
+            // 수면 상태 최초 감지 시 수면 소리 30분 자동 종료 시작
+            if (sleepMinutes > 0 && !prefs.isSleepDetected) {
+                Log.i(TAG, "Sleep detected! Starting 30-min auto-stop for sleep sound.")
+                prefs.setSleepDetected(true)
+                SleepSoundService.notifySleepDetected(ctx)
+            }
+
             if (sleepMinutes >= goalMinutes) {
                 Log.i(TAG, "Goal reached! Dismissing deadline alarm and triggering goal alarm.")
                 prefs.setAlarmFired(true)
