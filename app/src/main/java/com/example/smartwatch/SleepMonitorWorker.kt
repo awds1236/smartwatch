@@ -9,7 +9,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 
 /**
- * WorkManager CoroutineWorker — 15분 주기로 Health Connect의 수면 데이터를 확인하고,
+ * WorkManager CoroutineWorker — 1분 주기로 Health Connect의 수면 데이터를 확인하고,
  * 목표 수면 시간 달성 시 AlarmReceiver를 통해 알람을 울립니다.
  */
 class SleepMonitorWorker(
