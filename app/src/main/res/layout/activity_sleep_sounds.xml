@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground">
+    android:background="@color/sleep_bg_dark">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:text="수면 소리"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
+            android:textColor="@color/sleep_text_primary"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:text="수면에 도움이 되는 소리를 선택하세요"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/sleep_text_secondary"
             android:layout_marginBottom="8dp" />
 
         <TextView
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="30분 후 자동으로 소리가 꺼집니다"
             android:textSize="12sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/sleep_text_secondary"
             android:layout_marginBottom="24dp" />
 
         <!-- 현재 재생 상태 -->
@@ -44,9 +44,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:visibility="gone"
-            app:cardElevation="2dp"
+            app:cardElevation="0dp"
             app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="?attr/colorPrimaryContainer">
+            app:cardBackgroundColor="@color/sleep_bg_surface_variant">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:text="재생 중"
                     android:textSize="12sp"
-                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:textColor="@color/sleep_accent_coral"
                     android:layout_marginBottom="4dp" />
 
                 <TextView
@@ -68,7 +68,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:textColor="@color/sleep_text_primary"
                     android:layout_marginBottom="12dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -76,6 +76,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="소리 끄기"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -93,6 +95,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="소리 없이 모니터링 시작"
+            android:textColor="@color/sleep_text_secondary"
             android:layout_marginTop="16dp"
             style="@style/Widget.Material3.Button.TextButton" />
 

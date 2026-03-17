@@ -6,9 +6,10 @@
     android:layout_marginBottom="12dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardElevation="1dp"
+    app:cardElevation="0dp"
     app:cardCornerRadius="12dp"
-    app:rippleColor="?attr/colorPrimary">
+    app:cardBackgroundColor="@color/sleep_bg_surface"
+    app:rippleColor="@color/sleep_accent_coral">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -38,14 +39,14 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="@color/sleep_text_primary" />
 
             <TextView
                 android:id="@+id/tv_sound_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textColor="@color/sleep_text_secondary"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>

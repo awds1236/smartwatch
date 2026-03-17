@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/purple_500"
+    android:background="@color/sleep_bg_dark"
     android:padding="32dp">
 
     <TextView
@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="일어날 시간이에요!"
-        android:textColor="@android:color/white"
+        android:textColor="@color/sleep_text_primary"
         android:textSize="28sp"
         android:textStyle="bold"
         android:layout_marginBottom="12dp" />
@@ -30,9 +30,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="목표 수면 시간을 달성했습니다"
-        android:textColor="@android:color/white"
+        android:textColor="@color/sleep_text_secondary"
         android:textSize="16sp"
-        android:alpha="0.85"
         android:layout_marginBottom="48dp" />
 
     <com.google.android.material.button.MaterialButton
@@ -41,7 +40,8 @@
         android:layout_height="wrap_content"
         android:text="알람 해제"
         android:textSize="18sp"
+        android:textColor="@color/sleep_bg_dark"
         android:padding="16dp"
-        style="@style/Widget.Material3.Button.OutlinedButton" />
+        android:backgroundTint="@color/sleep_accent_coral" />
 
 </LinearLayout>
