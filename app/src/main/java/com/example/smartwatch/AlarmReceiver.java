@@ -44,6 +44,8 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (ACTION_DEADLINE.equals(action)) {
             // ── 기상 마감 알람 ──
             Log.i(TAG, "Deadline alarm triggered!");
+            cancelCountdownNotification(context);
+
             Intent alarmUi = new Intent(context, AlarmActivity.class);
             alarmUi.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             context.startActivity(alarmUi);
@@ -55,6 +57,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
             // 마감 알람은 더 이상 필요 없으므로 취소
             cancelDeadlineAlarm(context);
+            cancelCountdownNotification(context);
 
             // 알람 화면 표시
             Intent alarmUi = new Intent(context, AlarmActivity.class);
@@ -180,6 +183,15 @@ public class AlarmReceiver extends BroadcastReceiver {
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
+        }
+    }
+
+    /** MainActivity에서 표시하는 카운트다운 알림을 제거합니다. */
+    public static void cancelCountdownNotification(Context context) {
+        NotificationManager nm =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.cancel(3001); // MainActivity.COUNTDOWN_NOTIFICATION_ID
         }
     }
 }
