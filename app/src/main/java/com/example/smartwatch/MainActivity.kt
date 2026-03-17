@@ -29,6 +29,8 @@ import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import android.os.Handler
+import android.os.Looper
 
 class MainActivity : AppCompatActivity() {
 
@@ -100,9 +102,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 저장된 테마 적용
+        val tempPrefs = SleepPreferences(this)
+        SettingsActivity.applyTheme(tempPrefs.themeMode)
+
         setContentView(R.layout.activity_main)
 
-        prefs           = SleepPreferences(this)
+        prefs           = tempPrefs
         pickerHours     = findViewById(R.id.picker_hours)
         pickerMinutes   = findViewById(R.id.picker_minutes)
         tvStatus        = findViewById(R.id.tv_status)
@@ -122,6 +129,9 @@ class MainActivity : AppCompatActivity() {
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
+        findViewById<View>(R.id.btn_settings).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -354,8 +364,10 @@ class MainActivity : AppCompatActivity() {
         val deadlineMillis = calculateDeadlineMillis(deadlineHour, deadlineMinute)
         prefs.setDeadlineMillis(deadlineMillis)
 
-        // 마감 시간으로 시스템 알람 즉시 설정
-        AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
+        // 마감 시간으로 시스템 알람 설정 (Activity 전환 후 안정적 실행을 위해 짧은 딜레이)
+        Handler(Looper.getMainLooper()).postDelayed({
+            AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
+        }, 500)
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG,
