@@ -46,7 +46,67 @@
             android:text="원하는 수면 시간을 설정하세요"
             android:textSize="14sp"
             android:textColor="@color/sleep_text_secondary"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="20dp" />
+
+        <!-- 프리셋 섹션 -->
+        <LinearLayout
+            android:id="@+id/preset_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="저장된 프리셋"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/sleep_text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="탭하여 바로 시작"
+                    android:textSize="11sp"
+                    android:textColor="@color/sleep_text_secondary" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:id="@+id/preset_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <!-- 현재 설정 프리셋 저장 버튼 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save_preset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="현재 설정을 프리셋으로 저장"
+            android:textColor="@color/sleep_accent_coral"
+            app:strokeColor="@color/sleep_accent_coral"
+            app:icon="@android:drawable/ic_menu_save"
+            app:iconTint="@color/sleep_accent_coral"
+            android:layout_marginBottom="20dp"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
 
         <!-- 목표 수면 시간 설정 카드 -->
         <com.google.android.material.card.MaterialCardView

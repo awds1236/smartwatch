@@ -39,7 +39,8 @@ class SleepMonitorWorker(
         }
 
         return try {
-            val sleepMinutes = HealthConnectHelper(ctx).readTotalSleepMinutes()
+            val monitoringStartMillis = prefs.monitoringStartMillis
+            val sleepMinutes = HealthConnectHelper(ctx).readTotalSleepMinutes(monitoringStartMillis)
             val goalMinutes = prefs.goalMinutes.toLong()
             Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min")
 
