@@ -16,8 +16,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.TimePicker
@@ -60,6 +63,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var prefs: SleepPreferences
+    private lateinit var presetManager: PresetManager
+    private lateinit var presetSection: View
+    private lateinit var presetContainer: LinearLayout
     private lateinit var pickerHours: NumberPicker
     private lateinit var pickerMinutes: NumberPicker
     private lateinit var tvStatus: TextView
@@ -154,6 +160,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         prefs           = tempPrefs
+        presetManager   = PresetManager(this)
+        presetSection   = findViewById(R.id.preset_section)
+        presetContainer = findViewById(R.id.preset_container)
         pickerHours     = findViewById(R.id.picker_hours)
         pickerMinutes   = findViewById(R.id.picker_minutes)
         tvStatus        = findViewById(R.id.tv_status)
@@ -184,6 +193,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.btn_settings).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+        findViewById<View>(R.id.btn_save_preset).setOnClickListener { showSavePresetDialog() }
+        refreshPresetList()
     }
 
     override fun onResume() {
@@ -686,5 +697,106 @@ class MainActivity : AppCompatActivity() {
 
         val nm = getSystemService(NotificationManager::class.java)
         nm?.notify(ALARM_CANCELLED_NOTIFICATION_ID, notification)
+    }
+
+    // ── 프리셋 ──────────────────────────────────────────────────────
+
+    private fun showSavePresetDialog() {
+        val input = EditText(this).apply {
+            hint = "프리셋 이름 (예: 평일, 주말)"
+            setTextColor(getColor(R.color.sleep_text_primary))
+            setHintTextColor(getColor(R.color.sleep_text_secondary))
+            setPadding(48, 32, 48, 32)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("프리셋 저장")
+            .setMessage("현재 설정을 저장합니다.")
+            .setView(input)
+            .setPositiveButton("저장") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isEmpty()) {
+                    Toast.makeText(this, "이름을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                // 현재 picker 값을 먼저 저장
+                val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
+                prefs.setGoalMinutes(goalMinutes)
+                prefs.setDeadlineTime(pickerDeadline.hour, pickerDeadline.minute)
+
+                val preset = presetManager.createFromCurrent(name, prefs)
+                presetManager.save(preset)
+                refreshPresetList()
+                Toast.makeText(this, "'${name}' 프리셋이 저장되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun refreshPresetList() {
+        val presets = presetManager.all
+        presetContainer.removeAllViews()
+
+        if (presets.isEmpty()) {
+            presetSection.visibility = View.GONE
+            return
+        }
+
+        presetSection.visibility = View.VISIBLE
+        val inflater = LayoutInflater.from(this)
+
+        for (preset in presets) {
+            val card = inflater.inflate(R.layout.item_preset_card, presetContainer, false)
+            card.findViewById<TextView>(R.id.tv_preset_name).text = preset.name
+            card.findViewById<TextView>(R.id.tv_preset_deadline).text = preset.deadlineText
+            card.findViewById<TextView>(R.id.tv_preset_goal).text = "목표 ${preset.goalText}"
+
+            // 원터치 시작: 프리셋 로드 → 모니터링 시작
+            card.setOnClickListener { loadPresetAndStart(preset) }
+
+            // 삭제 버튼
+            card.findViewById<View>(R.id.btn_preset_delete).setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("프리셋 삭제")
+                    .setMessage("'${preset.name}' 프리셋을 삭제할까요?")
+                    .setPositiveButton("삭제") { _, _ ->
+                        presetManager.delete(preset.id)
+                        refreshPresetList()
+                    }
+                    .setNegativeButton("취소", null)
+                    .show()
+            }
+
+            presetContainer.addView(card)
+        }
+    }
+
+    private fun loadPresetAndStart(preset: PresetManager.Preset) {
+        if (prefs.isMonitoringActive) {
+            Toast.makeText(this, "이미 모니터링 중입니다. 먼저 중지해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 프리셋 값을 UI와 설정에 적용
+        pickerHours.value = preset.goalMinutes / 60
+        pickerMinutes.value = preset.goalMinutes % 60
+        prefs.setGoalMinutes(preset.goalMinutes)
+        updateGoalSummary(preset.goalMinutes)
+
+        pickerDeadline.hour = preset.deadlineHour
+        pickerDeadline.minute = preset.deadlineMinute
+        prefs.setDeadlineTime(preset.deadlineHour, preset.deadlineMinute)
+        updateDeadlineSummary(preset.deadlineHour, preset.deadlineMinute)
+
+        // 소리 설정 적용
+        prefs.setSoundEnabled(preset.soundEnabled)
+        if (preset.soundResId != 0) {
+            prefs.setSelectedSound(preset.soundResId, preset.soundTitle)
+        }
+
+        Toast.makeText(this, "'${preset.name}' 프리셋 적용 - 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
+
+        // 바로 모니터링 시작 (수면 소리 선택 화면으로)
+        startMonitoring()
     }
 }
