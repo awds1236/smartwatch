@@ -1,6 +1,9 @@
 package com.example.smartwatch
 
 import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,6 +12,8 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -20,6 +25,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -37,6 +43,9 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val WORK_TAG = "sleep_monitor"
+        private const val COUNTDOWN_CHANNEL_ID = "deadline_countdown_channel"
+        private const val COUNTDOWN_NOTIFICATION_ID = 3001
+        private const val COUNTDOWN_INTERVAL_MS = 60_000L // 1분
 
         /**
          * Health Connect 공식 API 방식으로 권한 문자열 Set 구성.
@@ -61,6 +70,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSessionTime: TextView
     private lateinit var tvActualSleepTime: TextView
     private lateinit var tvSleepDiff: TextView
+    private lateinit var tvDeadlineCountdown: TextView
+
+    private val countdownHandler = Handler(Looper.getMainLooper())
+    private val countdownRunnable = object : Runnable {
+        override fun run() {
+            if (prefs.isMonitoringActive) {
+                updateCountdown()
+                countdownHandler.postDelayed(this, COUNTDOWN_INTERVAL_MS)
+            }
+        }
+    }
 
     /**
      * 공식 Health Connect 권한 요청 런처.
@@ -124,7 +144,9 @@ class MainActivity : AppCompatActivity() {
         tvSessionTime    = findViewById(R.id.tv_session_time)
         tvActualSleepTime = findViewById(R.id.tv_actual_sleep_time)
         tvSleepDiff      = findViewById(R.id.tv_sleep_diff)
+        tvDeadlineCountdown = findViewById(R.id.tv_deadline_countdown)
 
+        createCountdownNotificationChannel()
         setupPickers()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
@@ -145,11 +167,13 @@ class MainActivity : AppCompatActivity() {
         }
         // 앱으로 복귀할 때마다 권한 재확인 (HC 설정에서 수동 허용 후 복귀 시 자동 반영)
         checkPermissionAndUpdateUI()
+        startCountdownTimer()
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(statusReceiver)
+        countdownHandler.removeCallbacks(countdownRunnable)
     }
 
     // ── 권한 확인 ──────────────────────────────────────────────────
@@ -380,6 +404,9 @@ class MainActivity : AppCompatActivity() {
             PeriodicWorkRequest.Builder(SleepMonitorWorker::class.java, 1, TimeUnit.MINUTES)
                 .addTag(WORK_TAG).build()
         )
+        showDeadlineNotification(deadlineHour, deadlineMinute)
+        startCountdownTimer()
+
         Toast.makeText(this, "수면 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
         updateUI()
     }
@@ -426,6 +453,10 @@ class MainActivity : AppCompatActivity() {
         // AlarmManager 기반이므로 즉시 취소 (Activity 시작 없음)
         AlarmReceiver.cancelDeadlineAlarm(this)
 
+        // 카운트다운 타이머 & 알림 정리
+        countdownHandler.removeCallbacks(countdownRunnable)
+        cancelDeadlineNotification()
+
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
@@ -434,7 +465,11 @@ class MainActivity : AppCompatActivity() {
         btnToggle.text  = if (active) "모니터링 중지" else "수면 모니터링 시작"
         tvStatus.text   = if (active) "수면 모니터링 중 (1분 주기 확인)" else "모니터링 중지됨"
         tvSleepProgress.visibility = if (active) View.VISIBLE else View.GONE
-        if (active) tvSleepProgress.text = "수면 데이터 확인 중..."
+        tvDeadlineCountdown.visibility = if (active) View.VISIBLE else View.GONE
+        if (active) {
+            tvSleepProgress.text = "수면 데이터 확인 중..."
+            updateCountdown()
+        }
         pickerHours.isEnabled   = !active
         pickerMinutes.isEnabled = !active
         pickerDeadline.isEnabled = !active
@@ -480,5 +515,85 @@ class MainActivity : AppCompatActivity() {
         val amPm = if (hour < 12) "오전" else "오후"
         val displayHour = if (hour % 12 == 0) 12 else hour % 12
         tvDeadlineSummary.text = "${amPm} ${displayHour}시 ${String.format("%02d", minute)}분까지 기상"
+    }
+
+    // ── 카운트다운 타이머 ────────────────────────────────────────────
+
+    private fun startCountdownTimer() {
+        countdownHandler.removeCallbacks(countdownRunnable)
+        if (prefs.isMonitoringActive && prefs.deadlineMillis > 0) {
+            countdownRunnable.run()
+        }
+    }
+
+    private fun updateCountdown() {
+        val deadlineMillis = prefs.deadlineMillis
+        if (deadlineMillis <= 0L) return
+
+        val remainMs = deadlineMillis - System.currentTimeMillis()
+        if (remainMs <= 0L) {
+            tvDeadlineCountdown.text = "알람 시간 도달"
+            return
+        }
+
+        val totalMin = (remainMs / 60_000L).toInt()
+        val hours = totalMin / 60
+        val minutes = totalMin % 60
+        tvDeadlineCountdown.text = "알람까지 ${hours}시간 ${minutes}분 남음"
+    }
+
+    // ── 알림 (Notification) ─────────────────────────────────────────
+
+    private fun createCountdownNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                COUNTDOWN_CHANNEL_ID,
+                "기상 알람 정보",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "기상 마감 알람 시간 알림"
+                setSound(null, null)
+            }
+            val nm = getSystemService(NotificationManager::class.java)
+            nm?.createNotificationChannel(channel)
+        }
+    }
+
+    private fun showDeadlineNotification(hour: Int, minute: Int) {
+        val amPm = if (hour < 12) "오전" else "오후"
+        val displayHour = if (hour % 12 == 0) 12 else hour % 12
+        val timeText = "${amPm} ${displayHour}시 ${String.format("%02d", minute)}분"
+
+        val deadlineMillis = prefs.deadlineMillis
+        val remainMs = deadlineMillis - System.currentTimeMillis()
+        val totalMin = if (remainMs > 0) (remainMs / 60_000L).toInt() else 0
+        val h = totalMin / 60
+        val m = totalMin % 60
+
+        val openPi = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, COUNTDOWN_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle("기상 알람: $timeText")
+            .setContentText("${h}시간 ${m}분 후에 알람이 울립니다")
+            .setContentIntent(openPi)
+            .setOngoing(true)
+            .setWhen(deadlineMillis)
+            .setUsesChronometer(true)
+            .setChronometerCountDown(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.notify(COUNTDOWN_NOTIFICATION_ID, notification)
+    }
+
+    private fun cancelDeadlineNotification() {
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.cancel(COUNTDOWN_NOTIFICATION_ID)
     }
 }

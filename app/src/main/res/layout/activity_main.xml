@@ -221,7 +221,16 @@
                     android:id="@+id/tv_sleep_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="22sp"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_deadline_countdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="28sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorPrimary"
                     android:layout_marginTop="8dp"
