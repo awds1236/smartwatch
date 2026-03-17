@@ -6,11 +6,11 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.concurrent.TimeUnit
 
 /**
  * Health Connect에서 수면 데이터를 읽어오는 헬퍼.
@@ -48,24 +48,26 @@ class HealthConnectHelper(context: Context) {
 
         val records = client.readRecords(request).records
 
-        // AWAKE = 1, OUT_OF_BED = 3 제외하고 실제 수면 시간만 합산
-        // (상수가 버전마다 다를 수 있어 정수값으로 직접 비교)
-        val awakeTypes = setOf(1, 3)
+        // AWAKE, OUT_OF_BED 단계를 제외하고 실제 수면 시간만 합산
+        val awakeTypes = setOf(
+            SleepSessionRecord.STAGE_TYPE_AWAKE,
+            SleepSessionRecord.STAGE_TYPE_OUT_OF_BED
+        )
         var totalSleepMs = 0L
         for (session in records) {
             val stages = session.stages
             if (stages.isEmpty()) {
-                totalSleepMs += session.endTime.toEpochMilli() - session.startTime.toEpochMilli()
+                totalSleepMs += Duration.between(session.startTime, session.endTime).toMillis()
             } else {
                 for (stage in stages) {
                     if (stage.stage !in awakeTypes) {
-                        totalSleepMs += stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
+                        totalSleepMs += Duration.between(stage.startTime, stage.endTime).toMillis()
                     }
                 }
             }
         }
 
-        val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(totalSleepMs)
+        val totalMinutes = Duration.ofMillis(totalSleepMs).toMinutes()
         Log.d(TAG, "Total sleep: ${totalMinutes}min (${records.size} sessions)")
         return totalMinutes
     }
