@@ -325,10 +325,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "최소 30분 이상 설정해주세요.", Toast.LENGTH_SHORT).show()
             return
         }
-        // 이전 알람 정리 (누적 방지)
-        AlarmReceiver.dismissPreviousAlarm(this)
-        AlarmReceiver.dismissDeadlineAlarm(this)
-
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
