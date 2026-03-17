@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyApp</string>
+    <string name="sleep_tracking">Sleep
+Tracking</string>
+    <string name="sleep_tracking_app_ui_kit">Sleep
+Tracking
+App UI kit</string>
+    <string name="35__screens">35+ Screens</string>
+</resources>

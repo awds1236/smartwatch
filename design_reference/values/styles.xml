@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextStyle_28sp">
+        <item name="android:textSize">28sp</item>
+    </style>
+    <style name="TextStyle_75sp">
+        <item name="android:textSize">75sp</item>
+        <item name="android:textColor">#FFF7F7F7</item>
+        <item name="android:fontFamily">Poppins</item>
+    </style>
+    <style name="TextStyle_40sp">
+        <item name="android:textSize">40sp</item>
+        <item name="android:textColor">#FFF7F7F7</item>
+        <item name="android:fontFamily">Poppins</item>
+    </style>
+</resources>

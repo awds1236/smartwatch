@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_0_26_47">#FF001A2F</color>
+    <color name="color_10_207_131">#FF0ACF83</color>
+    <color name="color_26_188_254">#FF1ABCFE</color>
+    <color name="color_156_156_156">#FF9C9C9C</color>
+    <color name="color_162_89_255">#FFA259FF</color>
+    <color name="color_242_78_30">#FFF24E1E</color>
+    <color name="color_247_247_247">#FFF7F7F7</color>
+    <color name="color_252_252_252">#FFFCFCFC</color>
+    <color name="color_255_114_98">#FFFF7262</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

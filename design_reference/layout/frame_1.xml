@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF001A2F">
+
+    <!-- Frame: Frame 1 (1024x768) -->
+
+    <!-- RECTANGLE: amazing-beautiful-sky-with-clouds-with-moon 1 -->
+    <LinearLayout
+        android:id="@+id/amazing_beautiful_sky_with_clouds_with_moon_1"
+        android:layout_width="1034dp"
+        android:layout_height="1044dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="-223dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- GROUP: Artboard 99 -->
+    <View
+        android:id="@+id/artboard_99"
+        android:layout_width="1335dp"
+        android:layout_height="929dp"
+        android:layout_marginStart="-128dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- GROUP: Group 39 -->
+    <View
+        android:id="@+id/group_39"
+        android:layout_width="101dp"
+        android:layout_height="97dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="81dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TEXT: Sleep Tracking -->
+    <TextView
+        android:id="@+id/sleep_tracking"
+        android:text="Sleep
+Tracking"
+        android:textSize="28sp"
+        android:gravity="start"
+        android:layout_width="251dp"
+        android:layout_height="66dp"
+        android:layout_marginStart="517dp"
+        android:layout_marginTop="63dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- TEXT: Sleep Tracking App UI kit -->
+    <TextView
+        android:id="@+id/sleep_tracking_app_ui_kit"
+        android:text="Sleep
+Tracking
+App UI kit"
+        android:textSize="75sp"
+        android:textColor="#FFF7F7F7"
+        android:gravity="start"
+        android:textStyle="bold"
+        android:fontFamily="Poppins"
+        android:layout_width="441dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="517dp"
+        android:layout_marginTop="151dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- FRAME: Tag -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/tag"
+        android:layout_width="399dp"
+        android:layout_height="92dp"
+        android:layout_marginStart="518dp"
+        android:layout_marginTop="481dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- FRAME: Figma svg -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/figma_svg"
+        android:layout_width="44dp"
+        android:layout_height="66dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+            android:background="#FFFFFFFF">
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="44dp"
+        android:layout_height="65dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="22dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="44dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- VECTOR: Vector -->
+            <ImageView
+                android:id="@+id/vector"
+                android:src="@drawable/ic_vector"
+                android:scaleType="fitXY"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="22dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- FRAME: Frame 6318 -->
+        <LinearLayout
+            android:id="@+id/frame_6318"
+            android:orientation="vertical"
+        android:layout_width="251dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="86dp"
+        android:layout_marginTop="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+            <!-- TEXT: 35+ Screens -->
+            <TextView
+                android:id="@+id/35__screens"
+                android:text="35+ Screens"
+                android:textSize="40sp"
+                android:textColor="#FFF7F7F7"
+                android:gravity="start"
+                android:textStyle="bold"
+                android:fontFamily="Poppins"
+        android:layout_width="374dp"
+        android:layout_height="48dp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
