@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         private const val COUNTDOWN_CHANNEL_ID = "deadline_countdown_channel"
         private const val COUNTDOWN_NOTIFICATION_ID = 3001
         private const val COUNTDOWN_INTERVAL_MS = 60_000L // 1분
+        private const val ALARM_CANCELLED_NOTIFICATION_ID = 3002
 
         /**
          * Health Connect 공식 API 방식으로 권한 문자열 Set 구성.
@@ -661,10 +662,6 @@ class MainActivity : AppCompatActivity() {
     private fun cancelDeadlineNotification() {
         val nm = getSystemService(NotificationManager::class.java)
         nm?.cancel(COUNTDOWN_NOTIFICATION_ID)
-    }
-
-    private companion object AlarmCancelledNotification {
-        private const val ALARM_CANCELLED_NOTIFICATION_ID = 3002
     }
 
     private fun showAlarmCancelledNotification() {
