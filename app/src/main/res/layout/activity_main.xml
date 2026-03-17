@@ -334,5 +334,16 @@
             android:textSize="16sp"
             android:enabled="false" />
 
+        <!-- 수면 사운드 버튼 (모니터링 중에만 표시) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sleep_sound"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="수면 사운드 듣기"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            style="@style/Widget.Material3.Button.TonalButton" />
+
     </LinearLayout>
 </ScrollView>

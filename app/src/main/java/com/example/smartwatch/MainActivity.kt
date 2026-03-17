@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvSessionTime: TextView
     private lateinit var tvActualSleepTime: TextView
     private lateinit var tvSleepDiff: TextView
+    private lateinit var btnSleepSound: Button
 
     /**
      * 공식 Health Connect 권한 요청 런처.
@@ -105,11 +106,15 @@ class MainActivity : AppCompatActivity() {
         tvSessionTime    = findViewById(R.id.tv_session_time)
         tvActualSleepTime = findViewById(R.id.tv_actual_sleep_time)
         tvSleepDiff      = findViewById(R.id.tv_sleep_diff)
+        btnSleepSound    = findViewById(R.id.btn_sleep_sound)
 
         setupPickers()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
+        btnSleepSound.setOnClickListener {
+            startActivity(Intent(this, SleepSoundActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -386,6 +391,7 @@ class MainActivity : AppCompatActivity() {
         pickerHours.isEnabled   = !active
         pickerMinutes.isEnabled = !active
         pickerDeadline.isEnabled = !active
+        btnSleepSound.visibility = if (active) View.VISIBLE else View.GONE
     }
 
     // ── Picker 초기화 ──────────────────────────────────────────────

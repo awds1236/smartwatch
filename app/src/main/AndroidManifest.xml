@@ -12,6 +12,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Foreground Service (수면 사운드 백그라운드 재생) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
     <!-- 진동 및 Wearable -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -61,6 +65,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 수면 사운드 선택 화면 -->
+        <activity
+            android:name=".SleepSoundActivity"
+            android:exported="false"
+            android:label="수면 사운드" />
+
+        <!-- 수면 사운드 백그라운드 재생 서비스 -->
+        <service
+            android:name=".SleepSoundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
         <!-- 전체화면 알람 화면 (잠금화면 위 표시) -->
         <activity
