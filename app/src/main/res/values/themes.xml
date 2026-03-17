@@ -26,5 +26,13 @@
         <item name="android:windowBackground">@color/sleep_bg_dark</item>
         <item name="android:statusBarColor">@color/sleep_bg_dark</item>
         <item name="android:navigationBarColor">@color/sleep_bg_dark</item>
+
+        <!-- 상태바 아이콘을 밝은 색으로 (다크 배경에 맞게) -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- Edge-to-Edge 투명 방지 -->
+        <item name="android:enforceStatusBarContrast">true</item>
+        <item name="android:enforceNavigationBarContrast">true</item>
     </style>
 </resources>
