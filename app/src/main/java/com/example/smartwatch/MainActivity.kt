@@ -1,5 +1,6 @@
 package com.example.smartwatch
 
+import android.app.AlarmManager
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,6 +9,7 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -351,6 +353,13 @@ class MainActivity : AppCompatActivity() {
 
     /** 수면 소리 선택(또는 스킵) 후 실제 모니터링을 시작한다. */
     private fun doStartMonitoring() {
+        // Android 12+: 정확한 알람 권한 확인
+        if (!canScheduleExactAlarms()) {
+            Toast.makeText(this, "알람 설정을 위해 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
+            requestExactAlarmPermission()
+            return
+        }
+
         val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
@@ -373,6 +382,22 @@ class MainActivity : AppCompatActivity() {
         )
         Toast.makeText(this, "수면 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
         updateUI()
+    }
+
+    /** Android 12+에서 정확한 알람 예약이 허용되어 있는지 확인합니다. */
+    private fun canScheduleExactAlarms(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        return am.canScheduleExactAlarms()
+    }
+
+    /** 정확한 알람 권한 설정 화면으로 이동합니다. */
+    private fun requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                data = Uri.parse("package:$packageName")
+            })
+        }
     }
 
     /**
