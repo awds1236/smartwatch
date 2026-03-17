@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvGoalSummary: TextView
     private lateinit var btnToggle: Button
     private lateinit var btnPermission: Button
+    private lateinit var cardSleepData: View
+    private lateinit var tvSessionTime: TextView
+    private lateinit var tvActualSleepTime: TextView
+    private lateinit var tvSleepDiff: TextView
 
     /**
      * 공식 Health Connect 권한 요청 런처.
@@ -90,6 +94,11 @@ class MainActivity : AppCompatActivity() {
         tvGoalSummary   = findViewById(R.id.tv_goal_summary)
         btnToggle       = findViewById(R.id.btn_toggle)
         btnPermission   = findViewById(R.id.btn_permission)
+
+        cardSleepData    = findViewById(R.id.card_sleep_data)
+        tvSessionTime    = findViewById(R.id.tv_session_time)
+        tvActualSleepTime = findViewById(R.id.tv_actual_sleep_time)
+        tvSleepDiff      = findViewById(R.id.tv_sleep_diff)
 
         setupPickers()
         btnPermission.setOnClickListener { requestHealthPermissions() }
@@ -154,7 +163,32 @@ class MainActivity : AppCompatActivity() {
         btnPermission.isEnabled = !granted
         btnPermission.text = if (granted) "Health Connect 권한 허용됨 ✓"
                              else         "Health Connect 권한 허용"
+        if (granted) loadSleepData()
         updateUI()
+    }
+
+    private fun loadSleepData() {
+        lifecycleScope.launch {
+            val data = runCatching {
+                HealthConnectHelper(this@MainActivity).readSleepData()
+            }.getOrNull()
+
+            if (data != null) {
+                cardSleepData.visibility = View.VISIBLE
+                tvSessionTime.text = formatMinutes(data.sessionMinutes)
+                tvActualSleepTime.text = formatMinutes(data.actualSleepMinutes)
+                val diff = data.sessionMinutes - data.actualSleepMinutes
+                tvSleepDiff.text = "-${formatMinutes(diff)}  "
+            } else {
+                cardSleepData.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun formatMinutes(minutes: Long): String {
+        val h = minutes / 60
+        val m = minutes % 60
+        return "${h}시간 ${m}분"
     }
 
     /**
