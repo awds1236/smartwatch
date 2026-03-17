@@ -29,8 +29,6 @@ import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
-import android.os.Handler
-import android.os.Looper
 
 class MainActivity : AppCompatActivity() {
 
@@ -400,17 +398,8 @@ class MainActivity : AppCompatActivity() {
         SleepSoundService.stop(this)
         WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
 
-        // 알람 삭제를 순차적으로 실행하고, 마지막에 우리 앱으로 복귀
-        val handler = Handler(Looper.getMainLooper())
-        AlarmReceiver.dismissDeadlineAlarm(this)
-        handler.postDelayed({
-            AlarmReceiver.dismissPreviousAlarm(this)
-        }, 600)
-        handler.postDelayed({
-            val bringBack = Intent(this, MainActivity::class.java)
-            bringBack.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            startActivity(bringBack)
-        }, 1200)
+        // AlarmManager 기반이므로 즉시 취소 (Activity 시작 없음)
+        AlarmReceiver.cancelDeadlineAlarm(this)
 
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
