@@ -71,6 +71,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvActualSleepTime: TextView
     private lateinit var tvSleepDiff: TextView
     private lateinit var tvDeadlineCountdown: TextView
+    private lateinit var cardActiveAlarm: View
+    private lateinit var tvAlarmTime: TextView
+    private lateinit var tvAlarmAmPm: TextView
+    private lateinit var tvAlarmRemaining: TextView
+    private lateinit var tvAlarmGoal: TextView
 
     private val countdownHandler = Handler(Looper.getMainLooper())
     private val countdownRunnable = object : Runnable {
@@ -153,6 +158,11 @@ class MainActivity : AppCompatActivity() {
         tvActualSleepTime = findViewById(R.id.tv_actual_sleep_time)
         tvSleepDiff      = findViewById(R.id.tv_sleep_diff)
         tvDeadlineCountdown = findViewById(R.id.tv_deadline_countdown)
+        cardActiveAlarm     = findViewById(R.id.card_active_alarm)
+        tvAlarmTime         = findViewById(R.id.tv_alarm_time)
+        tvAlarmAmPm         = findViewById(R.id.tv_alarm_ampm)
+        tvAlarmRemaining    = findViewById(R.id.tv_alarm_remaining)
+        tvAlarmGoal         = findViewById(R.id.tv_alarm_goal)
 
         createCountdownNotificationChannel()
         requestNotificationPermission()
@@ -476,6 +486,9 @@ class MainActivity : AppCompatActivity() {
         countdownHandler.removeCallbacks(countdownRunnable)
         cancelDeadlineNotification()
 
+        // 알람 종료 알림 표시
+        showAlarmCancelledNotification()
+
         Toast.makeText(this, "수면 모니터링이 중지되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
@@ -492,6 +505,7 @@ class MainActivity : AppCompatActivity() {
         pickerHours.isEnabled   = !active
         pickerMinutes.isEnabled = !active
         pickerDeadline.isEnabled = !active
+        updateActiveAlarmCard()
     }
 
     // ── Picker 초기화 ──────────────────────────────────────────────
@@ -561,6 +575,39 @@ class MainActivity : AppCompatActivity() {
         tvDeadlineCountdown.text = "알람까지 ${hours}시간 ${minutes}분 남음"
     }
 
+    // ── 활성 알람 카드 ─────────────────────────────────────────────
+
+    private fun updateActiveAlarmCard() {
+        val active = prefs.isMonitoringActive
+        cardActiveAlarm.visibility = if (active) View.VISIBLE else View.GONE
+        if (!active) return
+
+        val hour = prefs.deadlineHour
+        val minute = prefs.deadlineMinute
+        val amPm = if (hour < 12) "오전" else "오후"
+        val displayHour = if (hour % 12 == 0) 12 else hour % 12
+        tvAlarmTime.text = "${displayHour}:${String.format("%02d", minute)}"
+        tvAlarmAmPm.text = amPm
+
+        // 남은 시간
+        val deadlineMillis = prefs.deadlineMillis
+        if (deadlineMillis > 0) {
+            val remainMs = deadlineMillis - System.currentTimeMillis()
+            if (remainMs > 0) {
+                val totalMin = (remainMs / 60_000L).toInt()
+                val h = totalMin / 60
+                val m = totalMin % 60
+                tvAlarmRemaining.text = "${h}시간 ${m}분 후 울림"
+            } else {
+                tvAlarmRemaining.text = "알람 시간 도달"
+            }
+        }
+
+        // 수면 목표 정보
+        val goalMin = prefs.goalMinutes
+        tvAlarmGoal.text = "목표 ${goalMin / 60}시간 ${goalMin % 60}분 달성 시 울림"
+    }
+
     // ── 알림 (Notification) ─────────────────────────────────────────
 
     private fun createCountdownNotificationChannel() {
@@ -614,5 +661,22 @@ class MainActivity : AppCompatActivity() {
     private fun cancelDeadlineNotification() {
         val nm = getSystemService(NotificationManager::class.java)
         nm?.cancel(COUNTDOWN_NOTIFICATION_ID)
+    }
+
+    private companion object AlarmCancelledNotification {
+        private const val ALARM_CANCELLED_NOTIFICATION_ID = 3002
+    }
+
+    private fun showAlarmCancelledNotification() {
+        val notification = NotificationCompat.Builder(this, COUNTDOWN_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle("알람 종료")
+            .setContentText("설정된 기상 알람이 해제되었습니다.")
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        val nm = getSystemService(NotificationManager::class.java)
+        nm?.notify(ALARM_CANCELLED_NOTIFICATION_ID, notification)
     }
 }
