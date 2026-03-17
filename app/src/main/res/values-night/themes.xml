@@ -21,5 +21,10 @@
         <item name="android:windowBackground">@color/sleep_bg_dark</item>
         <item name="android:statusBarColor">@color/sleep_bg_dark</item>
         <item name="android:navigationBarColor">@color/sleep_bg_dark</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceStatusBarContrast">true</item>
+        <item name="android:enforceNavigationBarContrast">true</item>
     </style>
 </resources>

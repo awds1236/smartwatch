@@ -35,6 +35,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -140,6 +142,14 @@ class MainActivity : AppCompatActivity() {
         // 저장된 테마 적용
         val tempPrefs = SleepPreferences(this)
         SettingsActivity.applyTheme(tempPrefs.themeMode)
+
+        // 상태바/네비게이션바 색상 강제 적용 (Edge-to-Edge 투명 방지)
+        window.statusBarColor = getColor(R.color.sleep_bg_dark)
+        window.navigationBarColor = getColor(R.color.sleep_bg_dark)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false   // 밝은 아이콘 (다크 배경)
+            isAppearanceLightNavigationBars = false
+        }
 
         setContentView(R.layout.activity_main)
 
