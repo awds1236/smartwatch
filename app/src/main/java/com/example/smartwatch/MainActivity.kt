@@ -291,7 +291,7 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WORK_TAG,
             ExistingPeriodicWorkPolicy.REPLACE,
-            PeriodicWorkRequest.Builder(SleepMonitorWorker::class.java, 15, TimeUnit.MINUTES)
+            PeriodicWorkRequest.Builder(SleepMonitorWorker::class.java, 1, TimeUnit.MINUTES)
                 .addTag(WORK_TAG).build()
         )
         Toast.makeText(this, "수면 모니터링을 시작합니다.", Toast.LENGTH_SHORT).show()
@@ -306,7 +306,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         val active = prefs.isMonitoringActive
         btnToggle.text  = if (active) "모니터링 중지" else "수면 모니터링 시작"
-        tvStatus.text   = if (active) "수면 모니터링 중 (15분 주기 확인)" else "모니터링 중지됨"
+        tvStatus.text   = if (active) "수면 모니터링 중 (1분 주기 확인)" else "모니터링 중지됨"
         tvSleepProgress.visibility = if (active) View.VISIBLE else View.GONE
         if (active) tvSleepProgress.text = "수면 데이터 확인 중..."
         pickerHours.isEnabled   = !active
