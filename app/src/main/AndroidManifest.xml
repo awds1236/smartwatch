@@ -5,6 +5,9 @@
     <!-- Health Connect 수면 데이터 읽기 권한 -->
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
+    <!-- FOREGROUND_SERVICE_HEALTH 타입 서비스 실행에 필요 (targetSDK 35+) -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
     <!-- 알람 -->
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
