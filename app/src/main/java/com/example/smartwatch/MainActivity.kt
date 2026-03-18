@@ -442,6 +442,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        // Android 14+: 전체 화면 알림 권한 확인 (소리/진동은 작동하지만 화면 표시에 필요)
+        checkFullScreenIntentPermission()
+
         val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
         prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
@@ -497,6 +500,29 @@ class MainActivity : AppCompatActivity() {
             val perm = android.Manifest.permission.POST_NOTIFICATIONS
             if (checkSelfPermission(perm) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(perm)
+            }
+        }
+    }
+
+    /** Android 14+에서 전체 화면 알림 권한을 확인하고 안내합니다. */
+    private fun checkFullScreenIntentPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val nm = getSystemService(NotificationManager::class.java)
+            if (!nm.canUseFullScreenIntent()) {
+                AlertDialog.Builder(this)
+                    .setTitle("전체 화면 알람 권한 필요")
+                    .setMessage(
+                        "알람이 화면에 자동으로 표시되려면 전체 화면 알림 권한이 필요합니다.\n\n" +
+                        "이 권한이 없어도 알람 소리와 진동은 작동하지만, " +
+                        "알람 화면이 자동으로 나타나지 않을 수 있습니다."
+                    )
+                    .setPositiveButton("설정 열기") { _, _ ->
+                        startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = Uri.parse("package:$packageName")
+                        })
+                    }
+                    .setNegativeButton("나중에", null)
+                    .show()
             }
         }
     }

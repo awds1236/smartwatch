@@ -56,6 +56,9 @@ public class AlarmReceiver extends BroadcastReceiver {
             cancelCountdownNotification(context);
         }
 
+        // 즉시 소리/진동 시작 (Activity 실행 여부와 무관하게 알람 작동)
+        AlarmService.start(context);
+
         // 잠금화면/백그라운드에서도 알람 화면을 표시하기 위해
         // Full-screen intent notification 사용 (Android 10+ 필수 패턴)
         showFullScreenAlarmNotification(context);
