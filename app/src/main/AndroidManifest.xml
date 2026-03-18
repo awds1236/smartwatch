@@ -12,9 +12,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- Foreground Service (수면 소리 재생) -->
+    <!-- Foreground Service (수면 소리 재생 + 수면 모니터링) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
 
     <!-- 진동 및 Wearable -->
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -92,6 +93,12 @@
             android:name=".SleepSoundService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- 수면 모니터링 서비스 (Foreground Service로 Doze 모드에서도 안정 동작) -->
+        <service
+            android:name=".SleepMonitorService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
 
         <!-- AlarmManager BroadcastReceiver -->
         <receiver

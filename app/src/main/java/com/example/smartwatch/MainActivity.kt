@@ -34,20 +34,15 @@ import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.lifecycle.lifecycleScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val WORK_TAG = "sleep_monitor"
         private const val COUNTDOWN_CHANNEL_ID = "deadline_countdown_channel"
         private const val COUNTDOWN_NOTIFICATION_ID = 3001
         private const val COUNTDOWN_INTERVAL_MS = 60_000L // 1분
@@ -442,12 +437,8 @@ class MainActivity : AppCompatActivity() {
         // 마감 시간으로 시스템 알람 설정 (내부에서 기존 알람 삭제 후 새로 생성)
         AlarmReceiver.setDeadlineAlarm(this, deadlineHour, deadlineMinute)
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            WORK_TAG,
-            ExistingPeriodicWorkPolicy.REPLACE,
-            PeriodicWorkRequest.Builder(SleepMonitorWorker::class.java, 1, TimeUnit.MINUTES)
-                .addTag(WORK_TAG).build()
-        )
+        // Foreground Service로 수면 모니터링 시작 (Doze 모드에서도 안정 동작)
+        SleepMonitorService.start(this)
         showDeadlineNotification(deadlineHour, deadlineMinute)
         startCountdownTimer()
 
@@ -502,7 +493,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopMonitoring() {
         prefs.reset()
         SleepSoundService.stop(this)
-        WorkManager.getInstance(this).cancelAllWorkByTag(WORK_TAG)
+        SleepMonitorService.stop(this)
 
         // AlarmManager 기반이므로 즉시 취소 (Activity 시작 없음)
         AlarmReceiver.cancelDeadlineAlarm(this)
@@ -520,7 +511,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI() {
         val active = prefs.isMonitoringActive
         btnToggle.text  = if (active) "모니터링 중지" else "수면 모니터링 시작"
-        tvStatus.text   = if (active) "수면 모니터링 중 (1분 주기 확인)" else "모니터링 중지됨"
+        tvStatus.text   = if (active) "수면 모니터링 중" else "모니터링 중지됨"
         tvSleepProgress.visibility = if (active) View.VISIBLE else View.GONE
         tvDeadlineCountdown.visibility = if (active) View.VISIBLE else View.GONE
         if (active) {
