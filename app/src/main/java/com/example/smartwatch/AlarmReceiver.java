@@ -26,7 +26,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     private static final String TAG = "AlarmReceiver";
     private static final String CHANNEL_ID = "alarm_info_channel";
+    private static final String ALARM_CHANNEL_ID = "alarm_fullscreen_channel";
     private static final int NOTIFICATION_ID_DEADLINE = 1001;
+    private static final int NOTIFICATION_ID_ALARM = 1002;
 
     public static final String ALARM_LABEL = "수면 목표 달성";
     public static final String DEADLINE_ALARM_LABEL = "기상 마감 알람";
@@ -45,12 +47,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             // ── 기상 마감 알람 ──
             Log.i(TAG, "Deadline alarm triggered!");
             cancelCountdownNotification(context);
-
-            Intent alarmUi = new Intent(context, AlarmActivity.class);
-            alarmUi.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            context.startActivity(alarmUi);
-
-            new Thread(() -> WatchNotifier.sendAlarmStart(context)).start();
         } else {
             // ── 수면 목표 달성 알람 ──
             Log.i(TAG, "Goal alarm triggered!");
@@ -58,13 +54,62 @@ public class AlarmReceiver extends BroadcastReceiver {
             // 마감 알람은 더 이상 필요 없으므로 취소
             cancelDeadlineAlarm(context);
             cancelCountdownNotification(context);
+        }
 
-            // 알람 화면 표시
-            Intent alarmUi = new Intent(context, AlarmActivity.class);
-            alarmUi.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            context.startActivity(alarmUi);
+        // 잠금화면/백그라운드에서도 알람 화면을 표시하기 위해
+        // Full-screen intent notification 사용 (Android 10+ 필수 패턴)
+        showFullScreenAlarmNotification(context);
 
-            new Thread(() -> WatchNotifier.sendAlarmStart(context)).start();
+        new Thread(() -> WatchNotifier.sendAlarmStart(context)).start();
+    }
+
+    /**
+     * Full-screen intent notification으로 알람 화면을 표시합니다.
+     * Android 10+ 에서는 백그라운드에서 startActivity()가 제한되므로,
+     * 높은 우선순위 알림 + fullScreenIntent를 사용해야 잠금화면에서도 알람이 울립니다.
+     */
+    private static void showFullScreenAlarmNotification(Context context) {
+        ensureAlarmNotificationChannel(context);
+
+        Intent alarmUi = new Intent(context, AlarmActivity.class);
+        alarmUi.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent fullScreenPi = PendingIntent.getActivity(
+                context, 0, alarmUi,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setContentTitle("수면 알람")
+                .setContentText("설정한 알람 시간입니다!")
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setFullScreenIntent(fullScreenPi, true)
+                .setAutoCancel(true)
+                .setOngoing(true);
+
+        NotificationManager nm =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.notify(NOTIFICATION_ID_ALARM, builder.build());
+        }
+    }
+
+    /** 알람용 높은 중요도 알림 채널 (소리/진동 포함) */
+    private static void ensureAlarmNotificationChannel(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    ALARM_CHANNEL_ID, "수면 알람", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("수면 목표 달성 및 기상 마감 알람");
+            channel.setBypassDnd(true);
+            channel.enableVibration(true);
+            channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+
+            NotificationManager nm =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
         }
     }
 

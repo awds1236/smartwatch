@@ -1,5 +1,6 @@
 package com.example.smartwatch;
 
+import android.app.NotificationManager;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
@@ -83,6 +84,10 @@ public class AlarmActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        // Full-screen intent 알림 취소
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(1002); // NOTIFICATION_ID_ALARM
+
         // 수면 소리도 정지
         SleepSoundService.stop(this);
 

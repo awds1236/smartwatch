@@ -139,8 +139,15 @@ class SleepMonitorService : Service() {
             ctx, 0, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+        // setAlarmClock()을 사용해야 Android 12+에서 백그라운드 Activity 시작 권한이 부여됨
+        val showIntent = PendingIntent.getActivity(
+            ctx, 0,
+            Intent(ctx, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val triggerAt = System.currentTimeMillis() + 500L
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 500L, pi)
+        am.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAt, showIntent), pi)
     }
 
     // ── 알림 ──────────────────────────────────────────────────────────
