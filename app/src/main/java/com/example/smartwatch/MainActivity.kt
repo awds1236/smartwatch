@@ -123,6 +123,19 @@ class MainActivity : AppCompatActivity() {
     ) { /* 거부해도 모니터링 자체에는 영향 없음 */ }
 
     /**
+     * ACTIVITY_RECOGNITION 권한 요청 런처.
+     * targetSDK 35에서 foregroundServiceType="health" 서비스 시작 시 필수.
+     */
+    private val activityRecognitionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        Log.d(TAG, "ACTIVITY_RECOGNITION granted=$granted")
+        if (!granted) {
+            Toast.makeText(this, "수면 모니터링을 위해 활동 인식 권한이 필요합니다.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /**
      * 수면 소리 선택 화면에서 돌아오면 실제 모니터링을 시작한다.
      */
     private val sleepSoundsLauncher = registerForActivityResult(
@@ -181,6 +194,7 @@ class MainActivity : AppCompatActivity() {
 
         createCountdownNotificationChannel()
         requestNotificationPermission()
+        requestActivityRecognitionPermission()
         setupPickers()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
@@ -414,6 +428,13 @@ class MainActivity : AppCompatActivity() {
 
     /** 수면 소리 선택(또는 스킵) 후 실제 모니터링을 시작한다. */
     private fun doStartMonitoring() {
+        // ACTIVITY_RECOGNITION 권한 확인 (foregroundServiceType="health" 필수)
+        if (!hasActivityRecognitionPermission()) {
+            Toast.makeText(this, "활동 인식 권한이 필요합니다. 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
+            requestActivityRecognitionPermission()
+            return
+        }
+
         // Android 12+: 정확한 알람 권한 확인
         if (!canScheduleExactAlarms()) {
             Toast.makeText(this, "알람 설정을 위해 권한을 허용해주세요.", Toast.LENGTH_LONG).show()
@@ -451,6 +472,23 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         return am.canScheduleExactAlarms()
+    }
+
+    /** ACTIVITY_RECOGNITION 권한을 요청합니다 (foregroundServiceType="health" 필수). */
+    private fun requestActivityRecognitionPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val perm = android.Manifest.permission.ACTIVITY_RECOGNITION
+            if (checkSelfPermission(perm) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                activityRecognitionLauncher.launch(perm)
+            }
+        }
+    }
+
+    /** ACTIVITY_RECOGNITION 권한이 부여되었는지 확인합니다. */
+    private fun hasActivityRecognitionPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true
+        return checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
     /** Android 13+에서 알림 권한을 요청합니다. */
