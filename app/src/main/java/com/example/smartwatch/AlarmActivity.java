@@ -1,15 +1,6 @@
 package com.example.smartwatch;
 
-import android.app.NotificationManager;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
 import android.view.WindowManager;
 import android.widget.Button;
 
@@ -17,11 +8,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * 목표 수면 달성 시 잠금화면 위에 표시되는 전체화면 알람 화면.
+ * 소리/진동은 AlarmService에서 재생하며, 이 Activity는 UI만 담당합니다.
  */
 public class AlarmActivity extends AppCompatActivity {
-
-    private Vibrator vibrator;
-    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,75 +25,12 @@ public class AlarmActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_alarm);
 
-        startVibration();
-        startRingtone();
-
         Button btnDismiss = findViewById(R.id.btn_dismiss);
         btnDismiss.setOnClickListener(v -> dismissAlarm());
     }
 
-    private void startVibration() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            VibratorManager vm = (VibratorManager) getSystemService(VIBRATOR_MANAGER_SERVICE);
-            vibrator = vm.getDefaultVibrator();
-        } else {
-            vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        }
-        if (vibrator != null) {
-            long[] pattern = {0, 500, 300, 500, 300};
-            VibrationEffect effect = VibrationEffect.createWaveform(pattern, 0); // 0 = 반복
-            vibrator.vibrate(effect);
-        }
-    }
-
-    private void startRingtone() {
-        try {
-            Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-            if (ringtoneUri == null) {
-                ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            }
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build());
-            mediaPlayer.setDataSource(this, ringtoneUri);
-            mediaPlayer.setLooping(true);
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (Exception e) {
-            // 링톤 재생 실패 시 진동만으로 동작
-        }
-    }
-
     private void dismissAlarm() {
-        if (vibrator != null) vibrator.cancel();
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        // Full-screen intent 알림 취소
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (nm != null) nm.cancel(1002); // NOTIFICATION_ID_ALARM
-
-        // 수면 소리도 정지
-        SleepSoundService.stop(this);
-
-        // 워치 알람도 해제
-        new Thread(() -> WatchNotifier.sendAlarmDismiss(getApplicationContext())).start();
-
-        new SleepPreferences(this).reset();
+        AlarmService.dismissAlarm(this);
         finish();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (vibrator != null) vibrator.cancel();
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
-        super.onDestroy();
     }
 }

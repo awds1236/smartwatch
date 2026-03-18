@@ -97,6 +97,12 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
+        <!-- 알람 소리/진동 재생 서비스 -->
+        <service
+            android:name=".AlarmService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <!-- 수면 모니터링 서비스 (Foreground Service로 Doze 모드에서도 안정 동작) -->
         <service
             android:name=".SleepMonitorService"
