@@ -36,6 +36,7 @@ class SleepMonitorService : Service() {
         private const val NOTIFICATION_ID = 4001
         private const val CHECK_INTERVAL_MS = 2 * 60 * 1000L // 2분
         private const val MEDIA_AUTO_STOP_DELAY_MS = 20 * 60 * 1000L // 20분
+        private const val REM_ALARM_WINDOW_MS = 15 * 60 * 1000L // 마감 15분 전부터 REM 감지 시 알람
 
         @JvmStatic
         fun start(context: Context) {
@@ -142,6 +143,12 @@ class SleepMonitorService : Service() {
                     prefs.setAlarmFired(true)
                     triggerAlarm(ctx)
                     stopSelf()
+                } else if (shouldTriggerRemAlarm(prefs, data.isCurrentlyInRem)) {
+                    Log.i(TAG, "REM sleep detected within 15min of deadline! Triggering smart alarm.")
+                    prefs.setAlarmFired(true)
+                    AlarmReceiver.cancelDeadlineAlarm(ctx)
+                    triggerAlarm(ctx)
+                    stopSelf()
                 } else {
                     // 알림 업데이트: 진행 상태 표시
                     updateNotification(sleepMinutes, goalMinutes)
@@ -167,6 +174,28 @@ class SleepMonitorService : Service() {
         val triggerAt = System.currentTimeMillis() + 500L
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAt, showIntent), pi)
+    }
+
+    // ── REM 스마트 알람 ──────────────────────────────────────────────
+
+    /**
+     * 마감 시간 15분 전~마감 시간 사이에 REM 수면이 감지되면 true를 반환합니다.
+     * REM 수면은 얕은 수면 상태이므로, 이 시점에 깨우면 더 상쾌하게 기상할 수 있습니다.
+     */
+    private fun shouldTriggerRemAlarm(prefs: SleepPreferences, isCurrentlyInRem: Boolean): Boolean {
+        if (!isCurrentlyInRem) return false
+
+        val deadlineMillis = prefs.deadlineMillis
+        if (deadlineMillis <= 0L) return false
+
+        val now = System.currentTimeMillis()
+        val windowStart = deadlineMillis - REM_ALARM_WINDOW_MS
+
+        val inWindow = now in windowStart..deadlineMillis
+        if (inWindow) {
+            Log.i(TAG, "REM alarm window active: ${(deadlineMillis - now) / 60000}min before deadline")
+        }
+        return inWindow
     }
 
     // ── 외부 미디어 자동 중지 ─────────────────────────────────────────

@@ -23,7 +23,9 @@ class HealthConnectHelper(context: Context) {
     /** 수면 세션 시간과 실제 수면 시간을 담는 데이터 클래스 */
     data class SleepData(
         val sessionMinutes: Long,
-        val actualSleepMinutes: Long
+        val actualSleepMinutes: Long,
+        /** 가장 최근 수면 스테이지가 REM인지 여부 */
+        val isCurrentlyInRem: Boolean = false
     )
 
     companion object {
@@ -83,6 +85,9 @@ class HealthConnectHelper(context: Context) {
 
         var totalSessionMs = 0L
         var totalActualSleepMs = 0L
+        // 가장 최근 스테이지의 REM 여부를 추적
+        var latestStageTime: Instant = Instant.MIN
+        var latestStageIsRem = false
 
         for (session in records) {
             // 세션이 모니터링 시작 전에 완전히 끝났으면 무시
@@ -115,6 +120,12 @@ class HealthConnectHelper(context: Context) {
                     if (stage.stage !in awakeTypes) {
                         totalActualSleepMs += Duration.between(stageStart, stage.endTime).toMillis()
                     }
+
+                    // 가장 최근 스테이지 추적 (REM 감지용)
+                    if (stage.endTime.isAfter(latestStageTime)) {
+                        latestStageTime = stage.endTime
+                        latestStageIsRem = (stage.stage == SleepSessionRecord.STAGE_TYPE_REM)
+                    }
                 }
             }
         }
@@ -123,6 +134,9 @@ class HealthConnectHelper(context: Context) {
         val actualMinutes = Duration.ofMillis(totalActualSleepMs).toMinutes()
         Log.d(TAG, "Window start: $windowStart, Monitoring start: $monitoringStart")
         Log.d(TAG, "Session: ${sessionMinutes}min, Actual sleep: ${actualMinutes}min (${records.size} sessions)")
-        return SleepData(sessionMinutes, actualMinutes)
+        if (latestStageIsRem) {
+            Log.d(TAG, "REM sleep detected in latest stage (endTime: $latestStageTime)")
+        }
+        return SleepData(sessionMinutes, actualMinutes, latestStageIsRem)
     }
 }
