@@ -20,6 +20,7 @@ public class SleepPreferences {
     private static final String KEY_SOUND_RES_ID     = "sound_res_id";
     private static final String KEY_SOUND_TITLE      = "sound_title";
     private static final String KEY_MONITORING_START_MILLIS = "monitoring_start_millis";
+    private static final String KEY_PERMISSION_SETUP_DONE  = "permission_setup_done";
 
     /** 테마 모드 상수 */
     public static final int THEME_SYSTEM = 0;
@@ -113,6 +114,17 @@ public class SleepPreferences {
 
     public void setThemeMode(int mode) {
         prefs.edit().putInt(KEY_THEME_MODE, mode).apply();
+    }
+
+    // ── 권한 설정 완료 여부 ─────────────────────────────────────────
+
+    /** 권한 설정 화면을 완료했는지 여부. */
+    public boolean isPermissionSetupDone() {
+        return prefs.getBoolean(KEY_PERMISSION_SETUP_DONE, false);
+    }
+
+    public void setPermissionSetupDone(boolean done) {
+        prefs.edit().putBoolean(KEY_PERMISSION_SETUP_DONE, done).apply();
     }
 
     // ── 소리 설정 ──────────────────────────────────────────────────

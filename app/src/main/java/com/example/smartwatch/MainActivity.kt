@@ -160,6 +160,13 @@ class MainActivity : AppCompatActivity() {
             isAppearanceLightNavigationBars = false
         }
 
+        // 첫 실행 시 권한 설정 화면으로 이동
+        if (!tempPrefs.isPermissionSetupDone) {
+            startActivity(Intent(this, PermissionSetupActivity::class.java))
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_main)
 
         prefs           = tempPrefs
@@ -184,8 +191,6 @@ class MainActivity : AppCompatActivity() {
         tvAlarmRemaining    = findViewById(R.id.tv_alarm_remaining)
 
         createCountdownNotificationChannel()
-        requestNotificationPermission()
-        requestActivityRecognitionPermission()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
