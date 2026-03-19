@@ -21,7 +21,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.NumberPicker
 import android.widget.TextView
 import android.widget.TimePicker
 import android.widget.Toast
@@ -61,11 +60,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var presetManager: PresetManager
     private lateinit var presetSection: View
     private lateinit var presetContainer: LinearLayout
-    private lateinit var pickerHours: NumberPicker
-    private lateinit var pickerMinutes: NumberPicker
     private lateinit var tvStatus: TextView
     private lateinit var tvSleepProgress: TextView
-    private lateinit var tvGoalSummary: TextView
     private lateinit var btnToggle: Button
     private lateinit var btnPermission: Button
     private lateinit var pickerDeadline: TimePicker
@@ -79,7 +75,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvAlarmTime: TextView
     private lateinit var tvAlarmAmPm: TextView
     private lateinit var tvAlarmRemaining: TextView
-    private lateinit var tvAlarmGoal: TextView
 
     private val countdownHandler = Handler(Looper.getMainLooper())
     private val countdownRunnable = object : Runnable {
@@ -171,11 +166,8 @@ class MainActivity : AppCompatActivity() {
         presetManager   = PresetManager(this)
         presetSection   = findViewById(R.id.preset_section)
         presetContainer = findViewById(R.id.preset_container)
-        pickerHours     = findViewById(R.id.picker_hours)
-        pickerMinutes   = findViewById(R.id.picker_minutes)
         tvStatus        = findViewById(R.id.tv_status)
         tvSleepProgress = findViewById(R.id.tv_sleep_progress)
-        tvGoalSummary   = findViewById(R.id.tv_goal_summary)
         btnToggle       = findViewById(R.id.btn_toggle)
         btnPermission   = findViewById(R.id.btn_permission)
 
@@ -190,12 +182,10 @@ class MainActivity : AppCompatActivity() {
         tvAlarmTime         = findViewById(R.id.tv_alarm_time)
         tvAlarmAmPm         = findViewById(R.id.tv_alarm_ampm)
         tvAlarmRemaining    = findViewById(R.id.tv_alarm_remaining)
-        tvAlarmGoal         = findViewById(R.id.tv_alarm_goal)
 
         createCountdownNotificationChannel()
         requestNotificationPermission()
         requestActivityRecognitionPermission()
-        setupPickers()
         setupDeadlinePicker()
         btnPermission.setOnClickListener { requestHealthPermissions() }
         btnToggle.setOnClickListener { onToggleMonitoring() }
@@ -417,11 +407,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startMonitoring() {
-        val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
-        if (goalMinutes < 30) {
-            Toast.makeText(this, "최소 30분 이상 설정해주세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
         // 수면 소리 선택 화면을 먼저 열고, 결과를 받으면 실제 모니터링 시작
         sleepSoundsLauncher.launch(Intent(this, SleepSoundsActivity::class.java))
     }
@@ -445,8 +430,6 @@ class MainActivity : AppCompatActivity() {
         // Android 14+: 전체 화면 알림 권한 확인 (소리/진동은 작동하지만 화면 표시에 필요)
         checkFullScreenIntentPermission()
 
-        val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
-        prefs.setGoalMinutes(goalMinutes)
         prefs.setMonitoringActive(true)
         prefs.setAlarmFired(false)
         prefs.setSleepDetected(false)
@@ -582,35 +565,11 @@ class MainActivity : AppCompatActivity() {
             tvSleepProgress.text = "수면 데이터 확인 중..."
             updateCountdown()
         }
-        pickerHours.isEnabled   = !active
-        pickerMinutes.isEnabled = !active
         pickerDeadline.isEnabled = !active
         updateActiveAlarmCard()
     }
 
     // ── Picker 초기화 ──────────────────────────────────────────────
-
-    private fun setupPickers() {
-        pickerHours.minValue = 0; pickerHours.maxValue = 12
-        pickerMinutes.minValue = 0; pickerMinutes.maxValue = 59
-
-        val saved = prefs.goalMinutes
-        pickerHours.value   = saved / 60
-        pickerMinutes.value = saved % 60
-
-        val onChange = NumberPicker.OnValueChangeListener { _, _, _ ->
-            val total = pickerHours.value * 60 + pickerMinutes.value
-            prefs.setGoalMinutes(total)
-            updateGoalSummary(total)
-        }
-        pickerHours.setOnValueChangedListener(onChange)
-        pickerMinutes.setOnValueChangedListener(onChange)
-        updateGoalSummary(saved)
-    }
-
-    private fun updateGoalSummary(totalMinutes: Int) {
-        tvGoalSummary.text = "${totalMinutes / 60}시간 ${totalMinutes % 60}분 수면 목표"
-    }
 
     private fun setupDeadlinePicker() {
         pickerDeadline.setIs24HourView(false)
@@ -683,9 +642,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 수면 목표 정보
-        val goalMin = prefs.goalMinutes
-        tvAlarmGoal.text = "목표 ${goalMin / 60}시간 ${goalMin % 60}분 달성 시 울림"
     }
 
     // ── 알림 (Notification) ─────────────────────────────────────────
@@ -777,8 +733,6 @@ class MainActivity : AppCompatActivity() {
                     return@setPositiveButton
                 }
                 // 현재 picker 값을 먼저 저장
-                val goalMinutes = pickerHours.value * 60 + pickerMinutes.value
-                prefs.setGoalMinutes(goalMinutes)
                 prefs.setDeadlineTime(pickerDeadline.hour, pickerDeadline.minute)
 
                 val preset = presetManager.createFromCurrent(name, prefs)
@@ -806,7 +760,6 @@ class MainActivity : AppCompatActivity() {
             val card = inflater.inflate(R.layout.item_preset_card, presetContainer, false)
             card.findViewById<TextView>(R.id.tv_preset_name).text = preset.name
             card.findViewById<TextView>(R.id.tv_preset_deadline).text = preset.deadlineText
-            card.findViewById<TextView>(R.id.tv_preset_goal).text = "목표 ${preset.goalText}"
 
             // 원터치 시작: 프리셋 로드 → 모니터링 시작
             card.setOnClickListener { loadPresetAndStart(preset) }
@@ -835,11 +788,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 프리셋 값을 UI와 설정에 적용
-        pickerHours.value = preset.goalMinutes / 60
-        pickerMinutes.value = preset.goalMinutes % 60
-        prefs.setGoalMinutes(preset.goalMinutes)
-        updateGoalSummary(preset.goalMinutes)
-
         pickerDeadline.hour = preset.deadlineHour
         pickerDeadline.minute = preset.deadlineMinute
         prefs.setDeadlineTime(preset.deadlineHour, preset.deadlineMinute)

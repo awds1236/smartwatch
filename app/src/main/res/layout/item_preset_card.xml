@@ -54,16 +54,7 @@
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="@color/sleep_accent_coral"
-            android:layout_marginBottom="4dp" />
-
-        <!-- 목표 수면 시간 -->
-        <TextView
-            android:id="@+id/tv_preset_goal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="@color/sleep_text_secondary" />
+            android:textColor="@color/sleep_accent_coral" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

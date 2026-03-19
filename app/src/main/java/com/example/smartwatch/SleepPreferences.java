@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 public class SleepPreferences {
 
     private static final String PREFS_NAME        = "sleep_prefs";
-    private static final String KEY_GOAL_MINUTES  = "goal_minutes";
     private static final String KEY_MONITORING    = "monitoring_active";
     private static final String KEY_ALARM_FIRED   = "alarm_fired";
     private static final String KEY_SLEEP_DETECTED = "sleep_detected";
@@ -32,15 +31,6 @@ public class SleepPreferences {
     public SleepPreferences(Context context) {
         prefs = context.getApplicationContext()
                        .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-    }
-
-    /** 목표 수면 시간 (분 단위). 기본값 480분(8시간). */
-    public int getGoalMinutes() {
-        return prefs.getInt(KEY_GOAL_MINUTES, 480);
-    }
-
-    public void setGoalMinutes(int minutes) {
-        prefs.edit().putInt(KEY_GOAL_MINUTES, minutes).apply();
     }
 
     public boolean isMonitoringActive() {

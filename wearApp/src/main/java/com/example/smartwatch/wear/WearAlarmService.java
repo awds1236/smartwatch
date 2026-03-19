@@ -18,7 +18,7 @@ import java.util.Calendar;
 public class WearAlarmService extends WearableListenerService {
 
     private static final String TAG = "WearAlarmService";
-    private static final String ALARM_LABEL = "수면 목표 달성";
+    private static final String ALARM_LABEL = "수면 알람";
 
     @Override
     public void onMessageReceived(MessageEvent event) {

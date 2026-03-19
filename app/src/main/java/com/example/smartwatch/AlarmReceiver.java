@@ -19,7 +19,7 @@ import java.util.Calendar;
  * AlarmManager로부터 트리거를 받아 알람을 처리하는 BroadcastReceiver.
  *
  * 두 가지 알람을 처리합니다:
- * 1. 수면 목표 달성 알람 (SleepMonitorWorker에서 트리거)
+ * 1. REM 스마트 알람 (SleepMonitorService에서 REM 수면 감지 시 트리거)
  * 2. 기상 마감 알람 (AlarmManager.setAlarmClock으로 예약)
  */
 public class AlarmReceiver extends BroadcastReceiver {
@@ -30,7 +30,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static final int NOTIFICATION_ID_DEADLINE = 1001;
     private static final int NOTIFICATION_ID_ALARM = 1002;
 
-    public static final String ALARM_LABEL = "수면 목표 달성";
+    public static final String ALARM_LABEL = "수면 알람";
     public static final String DEADLINE_ALARM_LABEL = "기상 마감 알람";
 
     /** 기상 마감 알람 Action (AlarmManager용) */
@@ -48,8 +48,8 @@ public class AlarmReceiver extends BroadcastReceiver {
             Log.i(TAG, "Deadline alarm triggered!");
             cancelCountdownNotification(context);
         } else {
-            // ── 수면 목표 달성 알람 ──
-            Log.i(TAG, "Goal alarm triggered!");
+            // ── REM 스마트 알람 ──
+            Log.i(TAG, "REM smart alarm triggered!");
 
             // 마감 알람은 더 이상 필요 없으므로 취소
             cancelDeadlineAlarm(context);
@@ -103,7 +103,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     ALARM_CHANNEL_ID, "수면 알람", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("수면 목표 달성 및 기상 마감 알람");
+            channel.setDescription("수면 알람 (REM 스마트 알람 및 기상 마감 알람)");
             channel.setBypassDnd(true);
             channel.enableVibration(true);
             channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);

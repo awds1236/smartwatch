@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 /**
  * 수면 모니터링을 위한 Foreground Service.
  * WorkManager는 Doze 모드에서 지연되므로, Foreground Service로 안정적으로 수면 데이터를 확인합니다.
- * 2분 주기로 Health Connect에서 수면 데이터를 읽어 목표 달성 시 알람을 트리거합니다.
+ * 2분 주기로 Health Connect에서 수면 데이터를 읽어 REM 수면 감지 시 스마트 알람을 트리거합니다.
  */
 class SleepMonitorService : Service() {
 
@@ -127,8 +127,7 @@ class SleepMonitorService : Service() {
                 val monitoringStartMillis = prefs.monitoringStartMillis
                 val data = HealthConnectHelper(ctx).readSleepData(monitoringStartMillis)
                 val sleepMinutes = data.actualSleepMinutes
-                val goalMinutes = prefs.goalMinutes.toLong()
-                Log.i(TAG, "Sleep: ${sleepMinutes}min / Goal: ${goalMinutes}min")
+                Log.i(TAG, "Sleep: ${sleepMinutes}min")
 
                 // 수면 상태 최초 감지 시 수면 소리 + 외부 미디어 20분 자동 종료 시작
                 if (sleepMinutes > 0 && !prefs.isSleepDetected) {
@@ -138,12 +137,7 @@ class SleepMonitorService : Service() {
                     scheduleMediaAutoStop()
                 }
 
-                if (sleepMinutes >= goalMinutes) {
-                    Log.i(TAG, "Goal reached! Triggering goal alarm.")
-                    prefs.setAlarmFired(true)
-                    triggerAlarm(ctx)
-                    stopSelf()
-                } else if (shouldTriggerRemAlarm(prefs, data.isCurrentlyInRem)) {
+                if (shouldTriggerRemAlarm(prefs, data.isCurrentlyInRem)) {
                     Log.i(TAG, "REM sleep detected within 15min of deadline! Triggering smart alarm.")
                     prefs.setAlarmFired(true)
                     AlarmReceiver.cancelDeadlineAlarm(ctx)
@@ -151,7 +145,7 @@ class SleepMonitorService : Service() {
                     stopSelf()
                 } else {
                     // 알림 업데이트: 진행 상태 표시
-                    updateNotification(sleepMinutes, goalMinutes)
+                    updateNotification(sleepMinutes)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error reading sleep data", e)
@@ -294,7 +288,7 @@ class SleepMonitorService : Service() {
             .build()
     }
 
-    private fun updateNotification(sleepMinutes: Long, goalMinutes: Long) {
+    private fun updateNotification(sleepMinutes: Long) {
         val openPi = PendingIntent.getActivity(
             this, 0,
             Intent(this, MainActivity::class.java),
@@ -303,9 +297,7 @@ class SleepMonitorService : Service() {
 
         val sleepH = sleepMinutes / 60
         val sleepM = sleepMinutes % 60
-        val goalH = goalMinutes / 60
-        val goalM = goalMinutes % 60
-        val progress = "${sleepH}시간 ${sleepM}분 / ${goalH}시간 ${goalM}분"
+        val progress = "수면 ${sleepH}시간 ${sleepM}분 경과"
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
