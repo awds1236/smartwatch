@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sleep_bg_dark"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- 헤더 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="앱 권한 설정"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/sleep_text_primary"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수면 알람이 정상적으로 작동하려면 아래 권한들이 필요합니다.\n한번에 모두 설정해주세요."
+            android:textSize="14sp"
+            android:textColor="@color/sleep_text_secondary"
+            android:layout_marginBottom="28dp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- 1. 알림 권한 (Android 13+) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/sleep_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="알림"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_text_primary" />
+
+                    <TextView
+                        android:id="@+id/badge_notification"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="필요"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_bg_dark"
+                        android:background="@drawable/badge_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="알람 알림, 수면 모니터링 상태 표시에 필요합니다."
+                    android:textSize="13sp"
+                    android:textColor="@color/sleep_text_secondary"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_notification"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="알림 권한 허용"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 2. 활동 인식 권한 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_activity_recognition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/sleep_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="활동 인식"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_text_primary" />
+
+                    <TextView
+                        android:id="@+id/badge_activity_recognition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="필요"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_bg_dark"
+                        android:background="@drawable/badge_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="수면 모니터링 서비스 실행에 필요합니다."
+                    android:textSize="13sp"
+                    android:textColor="@color/sleep_text_secondary"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_activity_recognition"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="활동 인식 권한 허용"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 3. Health Connect 권한 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_health_connect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/sleep_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Health Connect (수면 데이터)"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_text_primary" />
+
+                    <TextView
+                        android:id="@+id/badge_health_connect"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="필요"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_bg_dark"
+                        android:background="@drawable/badge_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="수면 세션 데이터를 읽어 REM 수면 감지에 사용합니다."
+                    android:textSize="13sp"
+                    android:textColor="@color/sleep_text_secondary"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_health_connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Health Connect 권한 허용"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 4. 정확한 알람 권한 (Android 12+) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_exact_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/sleep_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="정확한 알람"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_text_primary" />
+
+                    <TextView
+                        android:id="@+id/badge_exact_alarm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="필요"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_bg_dark"
+                        android:background="@drawable/badge_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="정확한 시간에 알람을 울리기 위해 필요합니다."
+                    android:textSize="13sp"
+                    android:textColor="@color/sleep_text_secondary"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_exact_alarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="알람 권한 설정"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 5. 전체 화면 알림 권한 (Android 14+) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_fullscreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="28dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/sleep_bg_surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="전체 화면 알림"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_text_primary" />
+
+                    <TextView
+                        android:id="@+id/badge_fullscreen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="필요"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/sleep_bg_dark"
+                        android:background="@drawable/badge_background"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="2dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="알람이 잠금 화면 위에 전체 화면으로 표시됩니다."
+                    android:textSize="13sp"
+                    android:textColor="@color/sleep_text_secondary"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_fullscreen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="전체 화면 권한 설정"
+                    android:textColor="@color/sleep_accent_coral"
+                    app:strokeColor="@color/sleep_accent_coral"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 완료 버튼 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_done"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="설정 완료"
+            android:textSize="16sp"
+            android:textColor="@color/sleep_bg_dark"
+            android:backgroundTint="@color/sleep_accent_coral" />
+
+        <TextView
+            android:id="@+id/tv_skip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="나중에 설정하기"
+            android:textSize="14sp"
+            android:textColor="@color/sleep_text_secondary"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:padding="8dp" />
+
+    </LinearLayout>
+</ScrollView>

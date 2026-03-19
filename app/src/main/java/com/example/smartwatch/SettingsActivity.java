@@ -1,5 +1,6 @@
 package com.example.smartwatch;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +50,9 @@ public class SettingsActivity extends AppCompatActivity {
 
         setupThemeSection();
         setupSoundSection();
+        findViewById(R.id.btn_permission_setup).setOnClickListener(v ->
+            startActivity(new Intent(this, PermissionSetupActivity.class))
+        );
     }
 
     // ── 테마 설정 ──────────────────────────────────────────────────

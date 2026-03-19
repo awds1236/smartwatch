@@ -201,5 +201,17 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 권한 관리 버튼 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_permission_setup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="앱 권한 관리"
+            android:textColor="@color/sleep_accent_coral"
+            app:strokeColor="@color/sleep_accent_coral"
+            app:icon="@android:drawable/ic_menu_manage"
+            app:iconTint="@color/sleep_accent_coral"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
     </LinearLayout>
 </ScrollView>

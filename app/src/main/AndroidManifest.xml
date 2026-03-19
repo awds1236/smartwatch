@@ -79,6 +79,12 @@
             android:launchMode="singleTask"
             android:excludeFromRecents="true" />
 
+        <!-- 권한 설정 화면 (첫 실행 시) -->
+        <activity
+            android:name=".PermissionSetupActivity"
+            android:exported="false"
+            android:label="앱 권한 설정" />
+
         <!-- 설정 화면 -->
         <activity
             android:name=".SettingsActivity"
