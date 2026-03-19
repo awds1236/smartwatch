@@ -32,28 +32,22 @@ public class PresetManager {
     public static class Preset {
         public final String id;
         public final String name;
-        public final int goalMinutes;
         public final int deadlineHour;
         public final int deadlineMinute;
         public final boolean soundEnabled;
         public final int soundResId;
         public final String soundTitle;
 
-        public Preset(String id, String name, int goalMinutes,
+        public Preset(String id, String name,
                       int deadlineHour, int deadlineMinute,
                       boolean soundEnabled, int soundResId, String soundTitle) {
             this.id = id;
             this.name = name;
-            this.goalMinutes = goalMinutes;
             this.deadlineHour = deadlineHour;
             this.deadlineMinute = deadlineMinute;
             this.soundEnabled = soundEnabled;
             this.soundResId = soundResId;
             this.soundTitle = soundTitle;
-        }
-
-        public String getGoalText() {
-            return (goalMinutes / 60) + "시간 " + (goalMinutes % 60) + "분";
         }
 
         public String getDeadlineText() {
@@ -66,7 +60,6 @@ public class PresetManager {
             JSONObject obj = new JSONObject();
             obj.put("id", id);
             obj.put("name", name);
-            obj.put("goalMinutes", goalMinutes);
             obj.put("deadlineHour", deadlineHour);
             obj.put("deadlineMinute", deadlineMinute);
             obj.put("soundEnabled", soundEnabled);
@@ -79,7 +72,6 @@ public class PresetManager {
             return new Preset(
                 obj.optString("id", UUID.randomUUID().toString()),
                 obj.getString("name"),
-                obj.getInt("goalMinutes"),
                 obj.getInt("deadlineHour"),
                 obj.getInt("deadlineMinute"),
                 obj.optBoolean("soundEnabled", true),
@@ -121,7 +113,6 @@ public class PresetManager {
         return new Preset(
             UUID.randomUUID().toString(),
             name,
-            sleepPrefs.getGoalMinutes(),
             sleepPrefs.getDeadlineHour(),
             sleepPrefs.getDeadlineMinute(),
             sleepPrefs.isSoundEnabled(),

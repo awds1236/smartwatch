@@ -7,7 +7,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * 목표 수면 달성 시 잠금화면 위에 표시되는 전체화면 알람 화면.
+ * 알람 시 잠금화면 위에 표시되는 전체화면 알람 화면.
  * 소리/진동은 AlarmService에서 재생하며, 이 Activity는 UI만 담당합니다.
  */
 public class AlarmActivity extends AppCompatActivity {

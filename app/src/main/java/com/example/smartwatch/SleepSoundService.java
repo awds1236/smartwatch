@@ -19,7 +19,7 @@ import androidx.core.app.NotificationCompat;
 
 /**
  * 수면 사운드를 백그라운드에서 반복 재생하는 Foreground Service.
- * 30분 후 볼륨을 서서히 줄인 뒤 자동 종료합니다.
+ * 수면 감지 후 20분 뒤 볼륨을 서서히 줄인 뒤 자동 종료합니다.
  */
 public class SleepSoundService extends Service {
 
@@ -32,7 +32,7 @@ public class SleepSoundService extends Service {
     public static final String ACTION_STOP = "com.example.smartwatch.STOP_SLEEP_SOUND";
     public static final String ACTION_SLEEP_DETECTED = "com.example.smartwatch.SLEEP_DETECTED";
 
-    private static final long AUTO_STOP_DELAY_MS = 30 * 60 * 1000L; // 30분
+    private static final long AUTO_STOP_DELAY_MS = 20 * 60 * 1000L; // 20분
     private static final long FADE_DURATION_MS = 30_000L; // 30초 페이드아웃
     private static final long FADE_INTERVAL_MS = 500L;
 
@@ -61,7 +61,7 @@ public class SleepSoundService extends Service {
     };
 
     private final Runnable autoStopRunnable = () -> {
-        Log.d(TAG, "30분 경과 – 페이드아웃 시작");
+        Log.d(TAG, "20분 경과 – 페이드아웃 시작");
         handler.post(fadeOutRunnable);
     };
 
@@ -78,11 +78,11 @@ public class SleepSoundService extends Service {
             return START_NOT_STICKY;
         }
 
-        // 수면 감지 신호: 30분 카운트다운 시작
+        // 수면 감지 신호: 20분 카운트다운 시작
         if (intent != null && ACTION_SLEEP_DETECTED.equals(intent.getAction())) {
             if (mediaPlayer != null && mediaPlayer.isPlaying() && !autoStopScheduled) {
                 autoStopScheduled = true;
-                Log.d(TAG, "수면 감지 – 30분 후 자동 종료 예약");
+                Log.d(TAG, "수면 감지 – 20분 후 자동 종료 예약");
                 handler.postDelayed(autoStopRunnable, AUTO_STOP_DELAY_MS);
             }
             return START_NOT_STICKY;
@@ -187,7 +187,7 @@ public class SleepSoundService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)
                 .setContentTitle("수면 소리 재생 중")
-                .setContentText(soundTitle + " · 30분 후 자동 종료")
+                .setContentText(soundTitle + " · 수면 감지 후 20분 뒤 자동 종료")
                 .setContentIntent(openPi)
                 .addAction(android.R.drawable.ic_media_pause, "중지", stopPi)
                 .setOngoing(true)
@@ -226,7 +226,7 @@ public class SleepSoundService extends Service {
         running = false;
     }
 
-    /** 수면 감지 시 호출 — 30분 후 자동 종료 카운트다운 시작 */
+    /** 수면 감지 시 호출 — 20분 후 자동 종료 카운트다운 시작 */
     public static void notifySleepDetected(Context context) {
         if (!running) return;
         Intent intent = new Intent(context, SleepSoundService.class);
