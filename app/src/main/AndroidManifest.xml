@@ -120,6 +120,15 @@
             android:name=".AlarmReceiver"
             android:exported="false" />
 
+        <!-- 부팅 완료 시 수면 모니터링 서비스 자동 재시작 -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <!--
             [필수] Health Connect 권한 사용 이유 화면.
             - Android 13 이하: ACTION_SHOW_PERMISSIONS_RATIONALE 처리

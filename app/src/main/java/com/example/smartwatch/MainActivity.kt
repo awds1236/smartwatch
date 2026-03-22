@@ -213,6 +213,9 @@ class MainActivity : AppCompatActivity() {
         // 앱으로 복귀할 때마다 권한 재확인 (HC 설정에서 수동 허용 후 복귀 시 자동 반영)
         checkPermissionAndUpdateUI()
         startCountdownTimer()
+
+        // 모니터링 활성 상태인데 서비스가 죽었을 수 있으므로 재시작 보장
+        ensureMonitoringServiceRunning()
     }
 
     override fun onPause() {
@@ -405,6 +408,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ── 모니터링 ───────────────────────────────────────────────────
+
+    /**
+     * 모니터링이 활성 상태인데 서비스가 죽었을 수 있는 경우 재시작합니다.
+     * 앱이 강제 종료되거나 시스템에 의해 프로세스가 죽은 후 복귀 시 호출됩니다.
+     */
+    private fun ensureMonitoringServiceRunning() {
+        if (!prefs.isMonitoringActive) return
+        if (prefs.isAlarmFired) return
+
+        val deadlineMillis = prefs.deadlineMillis
+        if (deadlineMillis > 0 && System.currentTimeMillis() > deadlineMillis) {
+            return
+        }
+
+        Log.d(TAG, "Monitoring active — ensuring SleepMonitorService is running.")
+        SleepMonitorService.start(this)
+    }
 
     private fun onToggleMonitoring() {
         if (prefs.isMonitoringActive) stopMonitoring() else startMonitoring()
