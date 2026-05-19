@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'com.awds1236.smarthealth.wear'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.awds1236.smarthealth.wear"
