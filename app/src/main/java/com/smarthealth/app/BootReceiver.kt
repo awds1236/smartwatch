@@ -1,4 +1,4 @@
-package com.example.smartwatch
+package com.smarthealth.app
 
 import android.content.BroadcastReceiver
 import android.content.Context

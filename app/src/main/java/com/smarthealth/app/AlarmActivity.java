@@ -1,4 +1,4 @@
-package com.example.smartwatch;
+package com.smarthealth.app;
 
 import android.os.Bundle;
 import android.view.WindowManager;

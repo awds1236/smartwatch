@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.smartwatch'
+    namespace 'com.smarthealth.app'
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.example.smartwatch"
+        applicationId "com.smarthealth.app"
         minSdk 29
         targetSdk 35
         versionCode 1

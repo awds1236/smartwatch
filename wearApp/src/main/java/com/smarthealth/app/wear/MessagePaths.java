@@ -1,4 +1,4 @@
-package com.example.smartwatch.wear;
+package com.smarthealth.app.wear;
 
 public final class MessagePaths {
     public static final String ALARM_START   = "/alarm/start";

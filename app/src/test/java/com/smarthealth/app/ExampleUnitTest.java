@@ -1,4 +1,4 @@
-package com.example.smartwatch;
+package com.smarthealth.app;
 
 import org.junit.Test;
 
