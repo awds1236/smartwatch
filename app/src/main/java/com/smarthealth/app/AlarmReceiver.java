@@ -82,7 +82,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_notification_alarm)
                 .setContentTitle("수면 알람")
                 .setContentText("설정한 알람 시간입니다!")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -208,7 +208,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         ensureNotificationChannel(context);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_notification_alarm)
                 .setContentTitle("기상 마감 알람 설정됨")
                 .setContentText(timeText + "에 알람이 설정되었습니다.")
                 .setAutoCancel(true)

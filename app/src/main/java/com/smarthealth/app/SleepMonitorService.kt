@@ -280,7 +280,7 @@ class SleepMonitorService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_notification_sleep)
             .setContentTitle("수면 모니터링 중")
             .setContentText("수면 데이터를 확인하고 있습니다")
             .setContentIntent(openPi)
@@ -300,7 +300,7 @@ class SleepMonitorService : Service() {
         val progress = "수면 ${sleepH}시간 ${sleepM}분 경과"
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_notification_sleep)
             .setContentTitle("수면 모니터링 중")
             .setContentText(progress)
             .setContentIntent(openPi)

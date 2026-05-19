@@ -704,7 +704,7 @@ class MainActivity : AppCompatActivity() {
         )
 
         val notification = NotificationCompat.Builder(this, COUNTDOWN_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_notification_alarm)
             .setContentTitle("기상 알람: $timeText")
             .setContentText("${h}시간 ${m}분 후에 알람이 울립니다")
             .setContentIntent(openPi)
@@ -726,7 +726,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAlarmCancelledNotification() {
         val notification = NotificationCompat.Builder(this, COUNTDOWN_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_notification_alarm)
             .setContentTitle("알람 종료")
             .setContentText("설정된 기상 알람이 해제되었습니다.")
             .setAutoCancel(true)

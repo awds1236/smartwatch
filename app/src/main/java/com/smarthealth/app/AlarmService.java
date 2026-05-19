@@ -200,7 +200,7 @@ public class AlarmService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_notification_alarm)
                 .setContentTitle("수면 알람")
                 .setContentText("알람이 울리고 있습니다")
                 .setContentIntent(openPi)

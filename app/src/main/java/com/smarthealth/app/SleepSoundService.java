@@ -185,7 +185,7 @@ public class SleepSoundService extends Service {
         );
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)
+                .setSmallIcon(R.drawable.ic_notification_sound)
                 .setContentTitle("수면 소리 재생 중")
                 .setContentText(soundTitle + " · 수면 감지 후 20분 뒤 자동 종료")
                 .setContentIntent(openPi)
