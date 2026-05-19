@@ -7,5 +7,5 @@
 -dontwarn com.google.android.gms.wearable.**
 
 # Manifest에 등록된 컴포넌트
--keep class com.smarthealth.app.wear.WearAlarmActivity
--keep class com.smarthealth.app.wear.WearAlarmService
+-keep class com.awds1236.smarthealth.wear.WearAlarmActivity
+-keep class com.awds1236.smarthealth.wear.WearAlarmService

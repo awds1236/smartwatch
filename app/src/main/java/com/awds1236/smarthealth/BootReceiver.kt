@@ -1,4 +1,4 @@
-package com.smarthealth.app
+package com.awds1236.smarthealth
 
 import android.content.BroadcastReceiver
 import android.content.Context

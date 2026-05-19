@@ -39,14 +39,14 @@
 # ===========================
 # 앱 내부에서 Manifest로 등록된 컴포넌트들 (이미 자동 보존되지만 명시)
 # ===========================
--keep class com.smarthealth.app.MainActivity
--keep class com.smarthealth.app.AlarmActivity
--keep class com.smarthealth.app.HealthRationaleActivity
--keep class com.smarthealth.app.PermissionSetupActivity
--keep class com.smarthealth.app.SettingsActivity
--keep class com.smarthealth.app.SleepSoundsActivity
--keep class com.smarthealth.app.AlarmReceiver
--keep class com.smarthealth.app.BootReceiver
--keep class com.smarthealth.app.AlarmService
--keep class com.smarthealth.app.SleepSoundService
--keep class com.smarthealth.app.SleepMonitorService
+-keep class com.awds1236.smarthealth.MainActivity
+-keep class com.awds1236.smarthealth.AlarmActivity
+-keep class com.awds1236.smarthealth.HealthRationaleActivity
+-keep class com.awds1236.smarthealth.PermissionSetupActivity
+-keep class com.awds1236.smarthealth.SettingsActivity
+-keep class com.awds1236.smarthealth.SleepSoundsActivity
+-keep class com.awds1236.smarthealth.AlarmReceiver
+-keep class com.awds1236.smarthealth.BootReceiver
+-keep class com.awds1236.smarthealth.AlarmService
+-keep class com.awds1236.smarthealth.SleepSoundService
+-keep class com.awds1236.smarthealth.SleepMonitorService

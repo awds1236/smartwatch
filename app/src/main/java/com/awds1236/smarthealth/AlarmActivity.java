@@ -1,4 +1,4 @@
-package com.smarthealth.app;
+package com.awds1236.smarthealth;
 
 import android.os.Bundle;
 import android.view.WindowManager;

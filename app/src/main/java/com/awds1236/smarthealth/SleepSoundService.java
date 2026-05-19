@@ -1,4 +1,4 @@
-package com.smarthealth.app;
+package com.awds1236.smarthealth;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -29,8 +29,8 @@ public class SleepSoundService extends Service {
 
     public static final String EXTRA_SOUND_RES_ID = "extra_sound_res_id";
     public static final String EXTRA_SOUND_TITLE = "extra_sound_title";
-    public static final String ACTION_STOP = "com.smarthealth.app.STOP_SLEEP_SOUND";
-    public static final String ACTION_SLEEP_DETECTED = "com.smarthealth.app.SLEEP_DETECTED";
+    public static final String ACTION_STOP = "com.awds1236.smarthealth.STOP_SLEEP_SOUND";
+    public static final String ACTION_SLEEP_DETECTED = "com.awds1236.smarthealth.SLEEP_DETECTED";
 
     private static final long AUTO_STOP_DELAY_MS = 20 * 60 * 1000L; // 20분
     private static final long FADE_DURATION_MS = 30_000L; // 30초 페이드아웃

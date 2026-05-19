@@ -1,4 +1,4 @@
-package com.smarthealth.app.wear;
+package com.awds1236.smarthealth.wear;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class WearAlarmActivity extends AppCompatActivity {
 
-    public static final String ACTION_DISMISS = "com.smarthealth.app.wear.DISMISS";
+    public static final String ACTION_DISMISS = "com.awds1236.smarthealth.wear.DISMISS";
 
     private Vibrator vibrator;
 

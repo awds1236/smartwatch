@@ -1,4 +1,4 @@
-package com.smarthealth.app.wear;
+package com.awds1236.smarthealth.wear;
 
 import android.content.Intent;
 import android.provider.AlarmClock;

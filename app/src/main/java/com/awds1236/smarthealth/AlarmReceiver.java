@@ -1,4 +1,4 @@
-package com.smarthealth.app;
+package com.awds1236.smarthealth;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -34,7 +34,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public static final String DEADLINE_ALARM_LABEL = "기상 마감 알람";
 
     /** 기상 마감 알람 Action (AlarmManager용) */
-    public static final String ACTION_DEADLINE = "com.smarthealth.app.ACTION_DEADLINE";
+    public static final String ACTION_DEADLINE = "com.awds1236.smarthealth.ACTION_DEADLINE";
 
     /** PendingIntent 구분용 request code */
     private static final int RC_DEADLINE = 100;

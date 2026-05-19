@@ -1,4 +1,4 @@
-package com.smarthealth.app;
+package com.awds1236.smarthealth.wear;
 
 public final class MessagePaths {
     public static final String ALARM_START   = "/alarm/start";

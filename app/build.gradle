@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.smarthealth.app'
+    namespace 'com.awds1236.smarthealth'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.smarthealth.app"
+        applicationId "com.awds1236.smarthealth"
         minSdk 29
         targetSdk 35
         versionCode 1

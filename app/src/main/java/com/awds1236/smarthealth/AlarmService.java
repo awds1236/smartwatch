@@ -1,4 +1,4 @@
-package com.smarthealth.app;
+package com.awds1236.smarthealth;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -33,7 +33,7 @@ public class AlarmService extends Service {
     private static final int NOTIFICATION_ID = 5001;
     private static final long AUTO_STOP_DELAY_MS = 5 * 60 * 1000L; // 5분 안전 타임아웃
 
-    public static final String ACTION_DISMISS = "com.smarthealth.app.ACTION_DISMISS_ALARM";
+    public static final String ACTION_DISMISS = "com.awds1236.smarthealth.ACTION_DISMISS_ALARM";
 
     private Vibrator vibrator;
     private MediaPlayer mediaPlayer;
