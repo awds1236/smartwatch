@@ -17,10 +17,30 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv("SMARTHEALTH_KEYSTORE_PATH") ?: project.findProperty("SMARTHEALTH_KEYSTORE_PATH")
+            def keystorePassword = System.getenv("SMARTHEALTH_KEYSTORE_PASSWORD") ?: project.findProperty("SMARTHEALTH_KEYSTORE_PASSWORD")
+            def keyAliasValue = System.getenv("SMARTHEALTH_KEY_ALIAS") ?: project.findProperty("SMARTHEALTH_KEY_ALIAS")
+            def keyPasswordValue = System.getenv("SMARTHEALTH_KEY_PASSWORD") ?: project.findProperty("SMARTHEALTH_KEY_PASSWORD")
+
+            if (keystorePath && file(keystorePath).exists()) {
+                storeFile file(keystorePath)
+                storePassword keystorePassword
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def releaseSigning = signingConfigs.release
+            if (releaseSigning.storeFile != null) {
+                signingConfig releaseSigning
+            }
         }
     }
     compileOptions {

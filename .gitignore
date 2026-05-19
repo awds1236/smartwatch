@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signing keys / credentials - 절대 커밋 금지
+*.jks
+*.keystore
+keystore.properties
+signing.properties
